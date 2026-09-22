@@ -1,0 +1,4 @@
+summary: Report a Transaction TAG_REQUIRED response
+value:
+  code: TAG_REQUIRED
+  error: Your request does not include a tag field.

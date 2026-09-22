@@ -3,9 +3,10 @@
 This repository holds [OpenAPI 3.1](https://spec.openapis.org/oas/v3.1.2)
 descriptions of the MaxMind public web services.
 
-| Product                        | Bundled spec                               | Documentation                                                       |
-| ------------------------------ | ------------------------------------------ | ------------------------------------------------------------------- |
-| GeoIP and GeoLite web services | [`bundled/geoip.yaml`](bundled/geoip.yaml) | [dev.maxmind.com](https://dev.maxmind.com/geoip/docs/web-services/) |
+| Product                        | Bundled spec                                     | Documentation                                                          |
+| ------------------------------ | ------------------------------------------------ | ---------------------------------------------------------------------- |
+| GeoIP and GeoLite web services | [`bundled/geoip.yaml`](bundled/geoip.yaml)       | [dev.maxmind.com](https://dev.maxmind.com/geoip/docs/web-services/)    |
+| minFraud web services          | [`bundled/minfraud.yaml`](bundled/minfraud.yaml) | [dev.maxmind.com](https://dev.maxmind.com/minfraud/api-documentation/) |
 
 Each file in `bundled/` is self-contained. Use it with API tools and code
 generators. The files in `specs/`, `components/`, and `examples/` are the

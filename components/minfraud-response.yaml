@@ -1,0 +1,712 @@
+schemas:
+  ScoreBase:
+    type: object
+    description: >-
+      The fields common to the minFraud Score, Insights, and Factors responses,
+      apart from `ip_address`. Score, Insights, and Factors each have a
+      different shape for `ip_address`.
+    properties:
+      disposition:
+        $ref: "#/schemas/Disposition"
+        description: How a custom rule disposed of the request.
+      funds_remaining:
+        type: number
+        minimum: 0
+        description:
+          The approximate US dollar value of the funds left on your account.
+      id:
+        type: string
+        format: uuid
+        description: >-
+          The minFraud ID for this response. Use it to find the request in your
+          minFraud logs, or when you contact MaxMind support.
+      queries_remaining:
+        type: integer
+        minimum: 0
+        description: >-
+          The approximate number of queries left for this service before your
+          account runs out of funds.
+      risk_score:
+        type: number
+        minimum: 0.01
+        maximum: 99
+        description: >-
+          The overall risk score, from 0.01 to 99. A higher score means a higher
+          risk of fraud. For example, a score of 20 means a 20% chance that the
+          transaction is fraudulent. MaxMind never returns 0 or 100, since every
+          transaction carries some possibility of fraud.
+      warnings:
+        type: array
+        description:
+          Issues with the request, such as an invalid or unknown input.
+        items:
+          $ref: "#/schemas/Warning"
+    required:
+      - id
+      - risk_score
+      - funds_remaining
+      - queries_remaining
+  Score:
+    description: The minFraud Score response.
+    allOf:
+      - $ref: "#/schemas/ScoreBase"
+      - type: object
+        properties:
+          ip_address:
+            $ref: "#/schemas/ScoreIPAddress"
+            description: The risk associated with the IP address.
+  Insights:
+    description: >-
+      The minFraud Insights response. It has every field in the Score response,
+      plus more IP intelligence and risk factor data.
+    allOf:
+      - $ref: "#/schemas/ScoreBase"
+      - type: object
+        properties:
+          billing_address:
+            $ref: "#/schemas/AddressInsights"
+            description: Data about the billing address.
+          billing_phone:
+            $ref: "#/schemas/Phone"
+            description: Data about the billing phone number.
+          credit_card:
+            $ref: "#/schemas/ResponseCreditCard"
+            description: >-
+              Data about the credit card. Present only when the request includes
+              an issuer ID number.
+          device:
+            $ref: "#/schemas/ResponseDevice"
+            description: >-
+              Data about the device MaxMind associates with the IP address in
+              the request.
+          email:
+            $ref: "#/schemas/ResponseEmail"
+            description: Email intelligence data.
+          ip_address:
+            $ref: "#/schemas/InsightsIPAddress"
+            description: IP intelligence data.
+          shipping_address:
+            $ref: "#/schemas/ShippingAddressInsights"
+            description: Data about the shipping address.
+          shipping_phone:
+            $ref: "#/schemas/Phone"
+            description: Data about the shipping phone number.
+  Factors:
+    description: >-
+      The minFraud Factors response. It has every field in the Insights
+      response, plus the risk score reasons.
+    allOf:
+      - $ref: "#/schemas/Insights"
+      - type: object
+        properties:
+          risk_score_reasons:
+            type: array
+            description: >-
+              The reasons for the risk score. Usually present only for a medium
+              to high risk transaction. Not present when no reason changed the
+              score significantly.
+            items:
+              $ref: "#/schemas/RiskScoreReason"
+  Warning:
+    type: object
+    description: >-
+      A warning about an issue with the request. The `code` values below are the
+      current set. MaxMind can add more.
+
+
+      - `BILLING_CITY_NOT_FOUND`: the billing city is not in the MaxMind
+      database.
+
+      - `BILLING_COUNTRY_MISSING`: billing address fields are present but
+      `country` is not.
+
+      - `BILLING_COUNTRY_NOT_FOUND`: the billing country is not in the MaxMind
+      database.
+
+      - `BILLING_POSTAL_NOT_FOUND`: the billing postal code is not in the
+      MaxMind database.
+
+      - `BILLING_REGION_NOT_FOUND`: the billing region is not in the MaxMind
+      database.
+
+      - `EMAIL_ADDRESS_UNUSABLE`: the email address looks incorrect, so MaxMind
+      left it out of scoring.
+
+      - `INPUT_INVALID`: a value does not meet the field's constraints.
+
+      - `INPUT_UNKNOWN`: the request has a key MaxMind does not recognize.
+
+      - `IP_ADDRESS_INVALID`: the IP address is not a valid IPv4 or IPv6
+      address.
+
+      - `IP_ADDRESS_NOT_FOUND`: MaxMind could not geolocate the IP address.
+
+      - `IP_ADDRESS_RESERVED`: the IP address is in a reserved network.
+
+      - `SHIPPING_CITY_NOT_FOUND`: the shipping city is not in the MaxMind
+      database.
+
+      - `SHIPPING_COUNTRY_MISSING`: shipping address fields are present but
+      `country` is not.
+
+      - `SHIPPING_COUNTRY_NOT_FOUND`: the shipping country is not in the MaxMind
+      database.
+
+      - `SHIPPING_POSTAL_NOT_FOUND`: the shipping postal code is not in the
+      MaxMind database.
+
+      - `SHIPPING_REGION_NOT_FOUND`: the shipping region is not in the MaxMind
+      database.
+
+      - `TRACKING_TOKEN_INVALID`: the tracking token is malformed.
+
+      - `TRACKING_TOKEN_NOT_FOUND`: MaxMind does not recognize the tracking
+      token.
+
+
+      The address warnings can reduce the accuracy of distance calculations.
+    properties:
+      code:
+        type: string
+        maxLength: 255
+      input_pointer:
+        type: string
+        description: >-
+          A JSON Pointer to the request field the warning is about, for example
+          `/billing/city` or `/shopping_cart/1/price`.
+      warning:
+        type: string
+        description: >-
+          A human-readable explanation of the warning. The text can change at
+          any time.
+  Disposition:
+    type: object
+    description: >-
+      How a custom rule disposed of the request. Not present when your account
+      has no custom rules.
+    properties:
+      action:
+        type: string
+        description: >-
+          How MaxMind handled the request. Known values: `accept`, `reject`,
+          `manual_review`, `test`. MaxMind may add values. `accept` is the
+          default when no custom rule matches. Use `test` to test custom rules.
+      reason:
+        type: string
+        description: >-
+          Why `action` has its value. Known values: `default`, `custom_rule`.
+          MaxMind may add values.
+      rule_label:
+        type: string
+        description: >-
+          The label of the custom rule that was triggered. Not present when you
+          have no custom rules, the triggered rule has no label, or no rule was
+          triggered.
+  ScoreIPAddress:
+    type: object
+    description: The risk for the IP address, as returned by minFraud Score.
+    properties:
+      risk:
+        type: number
+        minimum: 0.01
+        maximum: 99
+        description: >-
+          The risk for the IP address, from 0.01 to 99. A higher value means
+          higher risk.
+  InsightsIPAddress:
+    type: object
+    description: >-
+      IP intelligence for the IP address, as returned by minFraud Insights and
+      Factors. This is the GeoIP Insights response body, with `risk` and
+      `risk_reasons` added, `is_high_risk` added to `country`, `local_time`
+      added to `location`, and no `maxmind` object. Every field can be absent if
+      MaxMind has no data for the IP address.
+    properties:
+      anonymizer:
+        $ref: "../components/geoip-records.yaml#/schemas/Anonymizer"
+        description: Anonymizer data for the IP address.
+      city:
+        $ref: "../components/geoip-records.yaml#/schemas/CityWithConfidence"
+        description: The city for the IP address.
+      continent:
+        $ref: "../components/geoip-records.yaml#/schemas/Continent"
+        description: The continent for the IP address.
+      country:
+        $ref: "#/schemas/InsightsIPAddressCountry"
+        description: >-
+          The country where MaxMind believes the IP address's user is located.
+      location:
+        $ref: "#/schemas/InsightsIPAddressLocation"
+        description: Location details for the IP address.
+      postal:
+        $ref: "../components/geoip-records.yaml#/schemas/PostalWithConfidence"
+        description: The postal code for the IP address.
+      registered_country:
+        $ref: "../components/geoip-records.yaml#/schemas/Country"
+        description: The country where the ISP registered the IP address.
+      represented_country:
+        $ref: "../components/geoip-records.yaml#/schemas/RepresentedCountry"
+      risk:
+        type: number
+        minimum: 0.01
+        maximum: 99
+        description: >-
+          The risk for the IP address, from 0.01 to 99. A higher value means
+          higher risk.
+      risk_reasons:
+        type: array
+        description: Why the IP address received its risk.
+        items:
+          $ref: "#/schemas/IPRiskReason"
+      subdivisions:
+        type: array
+        description: >-
+          The subdivisions of the country associated with the IP address,
+          ordered from largest to smallest.
+        items:
+          $ref: "../components/geoip-records.yaml#/schemas/SubdivisionWithConfidence"
+      traits:
+        $ref: "../components/geoip-records.yaml#/schemas/InsightsTraits"
+        description: General traits for the IP address.
+  InsightsIPAddressCountry:
+    description: >-
+      A country associated with an IP address, with MaxMind's confidence in the
+      result and whether MaxMind considers the country high-risk.
+    allOf:
+      - $ref: "../components/geoip-records.yaml#/schemas/CountryWithConfidence"
+      - type: object
+        properties:
+          is_high_risk:
+            type: boolean
+            deprecated: true
+            description: >-
+              Deprecated. True if MaxMind considers the IP address's country to
+              be high-risk.
+  InsightsIPAddressLocation:
+    description: >-
+      Location details for an IP address, including the local time at that
+      location.
+    allOf:
+      - $ref: "../components/geoip-records.yaml#/schemas/InsightsLocation"
+      - type: object
+        properties:
+          local_time:
+            type: string
+            format: date-time
+            description: >-
+              The date and time of the transaction in the time zone associated
+              with the IP address, in RFC 3339 format.
+  IPRiskReason:
+    type: object
+    description: >-
+      A reason why an IP address received its risk. The `code` values below are
+      the current set. MaxMind can add more.
+
+
+      - `ANONYMOUS_IP`: the IP address belongs to an anonymous network.
+
+      - `BILLING_POSTAL_VELOCITY`: many billing postal codes have been seen on
+      this IP address.
+
+      - `EMAIL_VELOCITY`: many email addresses have been seen on this IP
+      address.
+
+      - `HIGH_RISK_DEVICE`: a high-risk device was seen on this IP address.
+
+      - `HIGH_RISK_EMAIL`: a high-risk email address was seen on this IP address
+      in your past transactions.
+
+      - `ISSUER_ID_NUMBER_VELOCITY`: many issuer ID numbers have been seen on
+      this IP address.
+
+      - `MINFRAUD_NETWORK_ACTIVITY`: MaxMind has seen suspicious activity on
+      this IP address across minFraud customers.
+    properties:
+      code:
+        type: string
+        maxLength: 255
+      reason:
+        type: string
+        description: >-
+          A human-readable explanation of the reason. The text can change at any
+          time.
+  AddressInsights:
+    type: object
+    description: minFraud risk data about a billing address.
+    properties:
+      distance_to_ip_location:
+        type: integer
+        description: >-
+          The distance, in kilometers, from the address to the IP address's
+          location. When MaxMind cannot locate the address or the IP address
+          more precisely, it uses country or subdivision coordinates, which can
+          make this distance inaccurate.
+      is_in_ip_country:
+        type: boolean
+        description: >-
+          True if the address is in the IP address's country. Present only when
+          MaxMind can geolocate the IP address and the address was given.
+      is_postal_in_city:
+        type: boolean
+        description: >-
+          True if the postal code is in the city for the address. Present only
+          when the postal code, city, and country were all given. MaxMind
+          matches the postal code against the GeoNames preferred place name for
+          a US ZIP code. An alternative place name for a US ZIP code might not
+          produce a match.
+      latitude:
+        type: number
+        description: >-
+          The approximate WGS 84 latitude for the address. The coordinates are
+          not precise. Do not use them to identify a street address or
+          household.
+      longitude:
+        type: number
+        description: >-
+          The approximate WGS 84 longitude for the address. The coordinates are
+          not precise. Do not use them to identify a street address or
+          household.
+  ShippingAddressInsights:
+    description: minFraud risk data about a shipping address.
+    allOf:
+      - $ref: "#/schemas/AddressInsights"
+      - type: object
+        properties:
+          distance_to_billing_address:
+            type: integer
+            description: >-
+              The distance, in kilometers, from the shipping address to the
+              billing address. When MaxMind cannot locate an address more
+              precisely, it uses country or subdivision coordinates, which can
+              make this distance inaccurate.
+          is_high_risk:
+            type: boolean
+            description: >-
+              True if MaxMind associates the shipping address with fraudulent
+              transactions. Present only when a shipping address was given.
+  Phone:
+    type: object
+    description: minFraud risk data about a billing or shipping phone number.
+    properties:
+      country:
+        type: string
+        description:
+          The two-character ISO 3166-1 country code for the phone number.
+      is_voip:
+        type: boolean
+        description: >-
+          True if the phone number is a VoIP number allocated by a regulator.
+          Present only for a valid phone number that MaxMind has data for.
+      matches_postal:
+        type: boolean
+        description: >-
+          True if the phone number's prefix is commonly associated with the
+          postal code. Present only for a US number when MaxMind has the
+          number's prefix, and the postal code and country were also given.
+      network_operator:
+        type: string
+        description: >-
+          The original network operator associated with the phone number. This
+          does not reflect a number ported to another operator, and it does not
+          identify a mobile virtual network operator.
+      number_type:
+        type: string
+        description: >-
+          The phone number's type. Known values: `fixed`, `mobile`. MaxMind may
+          add values.
+  ResponseCreditCard:
+    type: object
+    description: >-
+      minFraud risk data about the credit card. Present only when the request
+      includes an issuer ID number.
+    properties:
+      brand:
+        type: string
+        maxLength: 255
+        description: 'The card brand, for example "Visa" or "Discover".'
+      country:
+        type: string
+        pattern: "^[A-Z]{2}$"
+        description: >-
+          The two-character ISO 3166-1 country code for the majority of
+          customers using this card, by billing address. If customers are spread
+          across countries, this is the country of the issuing bank instead.
+      is_business:
+        type: boolean
+        description: >-
+          True if the issuer ID number is for a business card. Present only when
+          a valid issuer ID number was given.
+      is_issued_in_billing_address_country:
+        type: boolean
+        description: >-
+          True if the billing address country matches the country of the
+          majority of customers using this issuer ID number. Present only when
+          both countries are known. When the customers for this issuer ID number
+          are spread across many countries, MaxMind matches against the country
+          of the issuing bank instead.
+      is_prepaid:
+        type: boolean
+        description: >-
+          True if the issuer ID number is for a prepaid card. Present only when
+          a valid issuer ID number was given.
+      is_virtual:
+        type: boolean
+        description: >-
+          True if the issuer ID number is for a virtual card. Present only when
+          a valid issuer ID number was given.
+      issuer:
+        $ref: "#/schemas/CreditCardIssuer"
+        description: Data about the bank that issued the card.
+      type:
+        type: string
+        description: >-
+          The card's type. Known values: `charge`, `credit`, `debit`. MaxMind
+          may add values.
+  CreditCardIssuer:
+    type: object
+    description: minFraud risk data about a credit card's issuing bank.
+    properties:
+      matches_provided_name:
+        type: boolean
+        description: >-
+          True if `name` matches the issuer name given in the request. Present
+          only when the request gives both a name and an issuer ID number, and
+          MaxMind has a name for that issuer ID number.
+      matches_provided_phone_number:
+        type: boolean
+        description: >-
+          True if `phone_number` matches the issuer phone number given in the
+          request. Present only when the request gives both a phone number and
+          an issuer ID number, and MaxMind has a phone number for that issuer ID
+          number.
+      name:
+        type: string
+        maxLength: 255
+        description: The name of the issuing bank.
+      phone_number:
+        type: string
+        maxLength: 255
+        description: >-
+          The phone number of the issuing bank. This number can be out of date.
+  ResponseDevice:
+    type: object
+    description: >-
+      Data about the device MaxMind associates with the IP address in the
+      request.
+    properties:
+      confidence:
+        type: number
+        minimum: 0.01
+        maximum: 99
+        description: >-
+          MaxMind's confidence that `id` refers to a unique device rather than a
+          cluster of similar devices, from 0.01 to 99. A higher value means
+          higher confidence.
+      id:
+        type: string
+        format: uuid
+        description: >-
+          MaxMind's ID for the device. Present only when the Device Tracking
+          Add-On is in use.
+      last_seen:
+        type: string
+        format: date-time
+        description:
+          The date and time MaxMind last saw the device, in RFC 3339 format.
+      local_time:
+        type: string
+        format: date-time
+        description: >-
+          The local date and time of the transaction in the device's time zone,
+          using the device's UTC offset, in RFC 3339 format.
+  ResponseEmail:
+    type: object
+    description: Email intelligence data.
+    properties:
+      domain:
+        $ref: "#/schemas/EmailDomain"
+        description: Data about the email domain.
+      first_seen:
+        type: string
+        format: date
+        description: >-
+          The date MaxMind first saw the email address. The earliest possible
+          date is 2008-01-01.
+      is_disposable:
+        type: boolean
+        description: >-
+          True if MaxMind believes the email address is from a disposable email
+          provider. Present only when the request gives a valid email address or
+          domain.
+      is_free:
+        type: boolean
+        description: >-
+          True if MaxMind believes the email domain is for a free provider, such
+          as Gmail or Yahoo! Mail. Present only when the request gives a valid
+          email address or domain.
+      is_high_risk:
+        type: boolean
+        description: >-
+          True if MaxMind believes the email address is likely to be used for
+          fraud. This is also factored into `risk_score`. Present only when the
+          request gives a valid email address or hash.
+  EmailDomain:
+    type: object
+    description: minFraud risk data about an email domain.
+    properties:
+      classification:
+        type: string
+        description: >-
+          A classification of the domain. Known values: `business`, `education`,
+          `government`, `isp_email`. MaxMind may add values.
+      first_seen:
+        type: string
+        format: date
+        description: >-
+          The date MaxMind first saw the email domain. The earliest possible
+          date is 2019-01-01.
+      risk:
+        type: number
+        minimum: 0.01
+        maximum: 99
+        description: >-
+          The risk associated with the domain, from 0.01 to 99. A higher value
+          means higher risk.
+      visit:
+        $ref: "#/schemas/EmailDomainVisit"
+        description: Data from an automated visit to the email domain.
+      volume:
+        type: number
+        minimum: 0.001
+        maximum: 1000000
+        description: >-
+          The activity MaxMind sees on this email domain across the minFraud
+          network, in sightings per million requests. The value is rounded to 2
+          significant figures.
+  EmailDomainVisit:
+    type: object
+    description: >-
+      Data from an automated visit to the email domain. Not present for a
+      high-volume domain, such as one for a large email provider or business,
+      and can be delayed for a newly-seen domain.
+    properties:
+      has_redirect:
+        type: boolean
+        description: >-
+          True if the domain redirects to another URL. Absent, not `false`, when
+          the domain does not redirect. When true, `status` describes the domain
+          the visit redirected to.
+      last_visited_on:
+        type: string
+        format: date
+        description: The date of the automated visit.
+      status:
+        type: string
+        description: >-
+          The status of the domain, or of the domain a redirect led to, as of
+          the automated visit. Known values: `live`, `dns_error`,
+          `network_error`, `http_error`, `parked`, `pre_development`. MaxMind
+          may add values.
+  RiskScoreReason:
+    type: object
+    description:
+      A reason for part of the risk score. Usually present only for a medium to
+      high risk transaction.
+    properties:
+      multiplier:
+        type: number
+        minimum: 0.01
+        maximum: 100
+        description: >-
+          The factor by which the reasons in `reasons` change the risk score. A
+          value above 1 raises the score. A value below 1 lowers it.
+      reasons:
+        type: array
+        description: The reasons for the multiplier.
+        items:
+          $ref: "#/schemas/CodeAndReason"
+  CodeAndReason:
+    type: object
+    description: >-
+      A machine-readable code and a human-readable reason for part of the risk
+      score. MaxMind can add codes. Known examples: `ANONYMOUS_IP`, `COUNTRY`,
+      `ORG_DISTANCE_RISK`.
+    properties:
+      code:
+        type: string
+        maxLength: 255
+        description: A machine-readable code that identifies the reason.
+      reason:
+        type: string
+        description: >-
+          A human-readable explanation of the reason. The text can change at any
+          time.
+  DispositionUpdatesResponse:
+    type: object
+    required:
+      - last_update_timestamp
+      - updates
+    properties:
+      last_update_timestamp:
+        type: string
+        format: date-time
+        description: >-
+          The sort timestamp of the last transaction in `updates`, in RFC 3339
+          format with microsecond precision. This can differ from that
+          transaction's `action_last_updated` and `note_last_updated`. Pass this
+          value as `updates_after` in your next request. An empty `updates`
+          array means there are no updates after `updates_after` yet. This value
+          is then not a transaction's timestamp, so keep your current
+          `updates_after` for the next request.
+      updates:
+        type: array
+        description: >-
+          The transactions with a disposition or note update after
+          `updates_after`, including a transaction whose manual review period
+          expired. MaxMind sorts by the earliest update timestamp, either the
+          disposition or the note, after `updates_after`. A response usually
+          holds at most 1000 updated transactions. Do not rely on this limit. A
+          transaction can appear in more than one response, for example when its
+          note changes after its disposition, so process updates idempotently.
+        items:
+          $ref: "#/schemas/DispositionUpdate"
+  DispositionUpdate:
+    type: object
+    required:
+      - minfraud_id
+    properties:
+      action:
+        type:
+          - string
+          - "null"
+        description: >-
+          The transaction's most recent disposition action. Known values:
+          `accept`, `reject`, `manual_review`, and `expired_review`, which means
+          the one-week manual review period expired before review.
+      action_last_updated:
+        type:
+          - string
+          - "null"
+        format: date-time
+        description: >-
+          The date and time the disposition action was last updated, in RFC 3339
+          format with microsecond precision.
+      minfraud_id:
+        type: string
+        format: uuid
+        description: The transaction's minFraud ID.
+      note:
+        type:
+          - string
+          - "null"
+        maxLength: 500
+        description: >-
+          The transaction's most recent note. Null if no note is set.
+      note_last_updated:
+        type:
+          - string
+          - "null"
+        format: date-time
+        description: >-
+          The date and time the note was last updated, in RFC 3339 format with
+          microsecond precision. Null if the transaction never had a note.

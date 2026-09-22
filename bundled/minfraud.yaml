@@ -1,0 +1,2466 @@
+openapi: 3.1.2
+info:
+  title: minFraud web services
+  version: 0.1.0
+  summary: Fraud risk scoring for an online transaction.
+  description: |-
+    The minFraud web services score a transaction for fraud risk. Score, Insights, and Factors accept the same request body and return increasingly detailed risk data. Report a transaction's outcome to improve future scoring, and read back manual disposition changes made in the account portal.
+
+    MaxMind can add fields, warning codes, and enum values to a response without a version change. Clients must ignore keys and values that they do not know.
+  contact:
+    name: MaxMind support
+    url: https://support.maxmind.com/
+  license:
+    name: Apache 2.0 or MIT
+    identifier: Apache-2.0 OR MIT
+  termsOfService: https://www.maxmind.com/en/terms-of-use
+servers:
+  - url: https://minfraud.maxmind.com
+    description: minFraud web services
+security:
+  - basicAuth: []
+tags:
+  - name: Score, Insights, and Factors
+    description: Score a transaction for fraud risk.
+  - name: Report a Transaction
+    description: Report a transaction's outcome to improve future scoring.
+  - name: Dispositions
+    description: Read manual disposition and note changes made in the account portal.
+  - name: Alerts
+    description: Receive a webhook when MaxMind re-scores a low-risk transaction as high risk.
+externalDocs:
+  description: minFraud API documentation
+  url: https://dev.maxmind.com/minfraud/api-documentation/
+paths:
+  /minfraud/v2.0/score:
+    servers:
+      - url: https://minfraud.maxmind.com
+        description: minFraud web services
+      - url: https://sandbox.maxmind.com
+        description: minFraud sandbox
+    post:
+      operationId: postScore
+      summary: Score a transaction
+      description: Returns the overall risk score and the risk for the IP address, but no other risk factor data.
+      tags:
+        - Score, Insights, and Factors
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/api-documentation/responses/
+      requestBody:
+        $ref: '#/components/requestBodies/Transaction'
+      responses:
+        '200':
+          description: The Score response for the transaction.
+          content:
+            application/vnd.maxmind.com-minfraud-score+json:
+              schema:
+                $ref: '#/components/schemas/Score'
+              examples:
+                score:
+                  $ref: '#/components/examples/score'
+        '400':
+          $ref: '#/components/responses/ScoreBadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          $ref: '#/components/responses/ScorePayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /minfraud/v2.0/insights:
+    servers:
+      - url: https://minfraud.maxmind.com
+        description: minFraud web services
+      - url: https://sandbox.maxmind.com
+        description: minFraud sandbox
+    post:
+      operationId: postInsights
+      summary: Score a transaction with IP intelligence
+      description: Returns every field in the Score response, plus IP intelligence data such as anonymizer detection, and risk data about the device, email, billing address, shipping address, and credit card.
+      tags:
+        - Score, Insights, and Factors
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/api-documentation/responses/
+      requestBody:
+        $ref: '#/components/requestBodies/Transaction'
+      responses:
+        '200':
+          description: The Insights response for the transaction.
+          content:
+            application/vnd.maxmind.com-minfraud-insights+json:
+              schema:
+                $ref: '#/components/schemas/Insights'
+              examples:
+                insights:
+                  $ref: '#/components/examples/insights'
+        '400':
+          $ref: '#/components/responses/ScoreBadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          $ref: '#/components/responses/ScorePayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /minfraud/v2.0/factors:
+    servers:
+      - url: https://minfraud.maxmind.com
+        description: minFraud web services
+      - url: https://sandbox.maxmind.com
+        description: minFraud sandbox
+    post:
+      operationId: postFactors
+      summary: Score a transaction with risk factors
+      description: Returns every field in the Insights response, plus the risk score reasons that explain the risk score.
+      tags:
+        - Score, Insights, and Factors
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/api-documentation/responses/
+      requestBody:
+        $ref: '#/components/requestBodies/Transaction'
+      responses:
+        '200':
+          description: The Factors response for the transaction.
+          content:
+            application/vnd.maxmind.com-minfraud-factors+json:
+              schema:
+                $ref: '#/components/schemas/Factors'
+              examples:
+                factors:
+                  $ref: '#/components/examples/factors'
+        '400':
+          $ref: '#/components/responses/ScoreBadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          $ref: '#/components/responses/ScorePayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /minfraud/v2.0/transactions/report:
+    post:
+      operationId: reportTransaction
+      summary: Report a transaction's outcome
+      description: Reports a transaction as fraud, legitimate, or another outcome, so MaxMind can use it to improve future risk scores. Give at least one of `ip_address`, `maxmind_id`, `minfraud_id`, and `transaction_id` in the request body so MaxMind can match the report to the original transaction.
+      tags:
+        - Report a Transaction
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/report-a-transaction/
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionReport'
+            examples:
+              transactionReport:
+                $ref: '#/components/examples/transaction-report'
+      responses:
+        '204':
+          description: MaxMind accepted the report.
+        '400':
+          $ref: '#/components/responses/ReportBadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          $ref: '#/components/responses/ReportPayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /minfraud/disposition/v1.0/updates:
+    get:
+      operationId: listDispositionUpdates
+      summary: List disposition and note updates
+      description: Returns transactions whose disposition or note changed, through the account portal's manual review, after `updates_after`. Use this only if you set dispositions or notes from the account portal and need those changes in your own system.
+      tags:
+        - Dispositions
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/working-with-transaction-dispositions/
+      parameters:
+        - name: updates_after
+          in: query
+          required: true
+          description: An exclusive lower bound, as an RFC 3339 timestamp. MaxMind returns only updates made after this time. URL-encode the value, for example send a `+` in the UTC offset as `%2B`. Pass the previous response's `last_update_timestamp` to page through results.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: The transactions with a disposition or note update.
+          content:
+            application/vnd.maxmind.com-disposition-updates+json:
+              schema:
+                $ref: '#/components/schemas/DispositionUpdatesResponse'
+              examples:
+                dispositionUpdates:
+                  $ref: '#/components/examples/disposition-updates'
+        '400':
+          $ref: '#/components/responses/DispositionBadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+webhooks:
+  minFraudAlert:
+    get:
+      operationId: minFraudAlert
+      security: []
+      summary: Receive a minFraud Alert
+      description: |-
+        MaxMind monitors a transaction for 24 hours after it first scores 10 or below. If new information raises the re-calculated risk score to 75 or above, MaxMind sends this request to the webhook URL you configure in the account portal. Your endpoint must accept `GET` requests over HTTPS.
+
+        MaxMind can add query parameters. Ignore parameters you do not know. Requests come from `34.27.174.58` or `2600:1900:4000:947::/64`. These source addresses can change.
+      tags:
+        - Alerts
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/alerts/
+      parameters:
+        - name: User-Agent
+          in: header
+          required: false
+          description: The value is `MaxMind MinFraud Alert Robot`.
+          schema:
+            type: string
+        - name: X-MaxMind-Alert-HMAC-SHA256
+          in: header
+          required: false
+          description: The hex-encoded HMAC-SHA256 signature of the raw query string, using the webhook secret you configure in the account portal. Present only when you configure a secret.
+          schema:
+            type: string
+        - name: city
+          in: query
+          required: false
+          description: The billing city from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 255
+        - name: country
+          in: query
+          required: false
+          description: The billing country from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 2
+        - name: date
+          in: query
+          required: false
+          description: The date of the original minFraud request, for example `Nov. 1, 2019`.
+          schema:
+            type: string
+            maxLength: 255
+        - name: domain
+          in: query
+          required: false
+          description: The email domain from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 255
+        - name: i
+          in: query
+          required: false
+          description: The IP address from the original minFraud request.
+          schema:
+            type: string
+            anyOf:
+              - format: ipv4
+              - format: ipv6
+              - maxLength: 0
+        - name: maxmindID
+          in: query
+          required: false
+          description: The minFraud Legacy `maxmindID` of the original request.
+          schema:
+            type: string
+            maxLength: 8
+        - name: minfraud_id
+          in: query
+          required: false
+          description: The minFraud ID of the original request.
+          schema:
+            type: string
+            format: uuid
+        - name: new_risk_score
+          in: query
+          required: false
+          description: The risk score MaxMind recalculated with additional information.
+          schema:
+            type: number
+            minimum: 0.01
+            maximum: 99
+        - name: old_risk_score
+          in: query
+          required: false
+          description: The risk score as originally calculated.
+          schema:
+            type: number
+            minimum: 0.01
+            maximum: 99
+        - name: postal
+          in: query
+          required: false
+          description: The billing postal code from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 255
+        - name: reason
+          in: query
+          required: false
+          description: A human-readable explanation of why MaxMind sent the alert.
+          schema:
+            type: string
+        - name: reason_code
+          in: query
+          required: false
+          description: 'A machine-readable code for why MaxMind sent the alert. Known values: `CARDER_EMAIL`, `HIGH_RISK_DEVICE`, `HIGH_RISK_IP`, `HOSTING_PROVIDER`, `MANUAL_REVIEW`, `POSTAL_VELOCITY`. These values can change.'
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: false
+          description: The billing region from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 4
+        - name: shop_id
+          in: query
+          required: false
+          description: The shop ID from the original minFraud request. Present only when the original request gave one.
+          schema:
+            type: string
+            maxLength: 255
+        - name: txnID
+          in: query
+          required: false
+          description: The transaction ID from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 255
+        - name: updated_at
+          in: query
+          required: false
+          description: The date and time the new risk score was calculated, in RFC 3339 format, for example `2019-11-01T12:34:56Z`.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        2XX:
+          description: Return a 2xx status to acknowledge the alert.
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: The username is your MaxMind account ID. The password is your MaxMind license key. The service accepts HTTPS requests only, with TLS 1.2 or higher.
+  requestBodies:
+    Transaction:
+      description: The request body must not exceed 20,000 bytes.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Request'
+          examples:
+            request:
+              $ref: '#/components/examples/request'
+  responses:
+    ScoreBadRequest:
+      description: |-
+        The request is not valid. The `code` is one of:
+        - `JSON_INVALID`: the request body is not a JSON object.
+        - `REQUEST_INVALID`: the request body is valid JSON but has no valid input values.
+        - `REQUEST_TOO_BIG`: the request body is too large.
+        - `BAD_REQUEST`: there was a problem reading or decoding the request body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            error:
+              $ref: '#/components/examples/score-bad-request'
+    ReportBadRequest:
+      description: |-
+        The request is not valid. The `code` is one of:
+        - `JSON_INVALID`: the request body is not a valid JSON object.
+        - `PARAMETER_UNKNOWN`: the request has a key this endpoint does not use.
+        - `TAG_REQUIRED`: the request has no `tag`.
+        - `TAG_INVALID`: `tag` is not one of the accepted values.
+        - `TRANSACTION_ID_REQUIRED`: the request has none of `ip_address`, `maxmind_id`, `minfraud_id`, and `transaction_id`.
+        - `IP_ADDRESS_INVALID`: `ip_address` is not a valid IPv4 or IPv6 address.
+        - `IP_ADDRESS_RESERVED`: `ip_address` is in a reserved or private range.
+        - `MAXMIND_ID_INVALID`: `maxmind_id` is not a valid MaxMind ID. It must be 8 characters of digits and uppercase letters.
+        - `MINFRAUD_ID_INVALID`: `minfraud_id` is not a valid UUID.
+        - `NOTES_INVALID`: `notes` is over 1000 Unicode characters or contains a NUL character.
+        - Other `_INVALID` codes, for example `TRANSACTION_ID_INVALID`: the value of that field is not valid. `TRANSACTION_ID_INVALID` and `CHARGEBACK_CODE_INVALID` also cover a field that contains a NUL character.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            error:
+              $ref: '#/components/examples/report-bad-request'
+    DispositionBadRequest:
+      description: |-
+        The request is not valid. The `code` is one of:
+        - `UPDATES_AFTER_REQUIRED`: the request has no `updates_after` parameter, or its value is empty.
+        - `TIMESTAMP_INVALID`: `updates_after` is not a valid RFC 3339 timestamp.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            error:
+              $ref: '#/components/examples/disposition-bad-request'
+    Unauthorized:
+      description: |-
+        The credentials are missing or not valid. The `code` is one of:
+        - `AUTHORIZATION_INVALID`: the account ID or license key is not valid.
+        - `ACCOUNT_ID_REQUIRED`: the Basic credentials have no account ID.
+        - `LICENSE_KEY_REQUIRED`: the Basic credentials have no license key.
+      headers:
+        WWW-Authenticate:
+          description: The authentication scheme, for example `Basic realm="minfraud"`.
+          schema:
+            type: string
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            error:
+              value:
+                code: AUTHORIZATION_INVALID
+                error: Your account ID or license key could not be authenticated.
+    PaymentRequired:
+      description: The account has no funds for this service (`INSUFFICIENT_FUNDS`).
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            error:
+              $ref: '#/components/examples/error'
+    Forbidden:
+      description: The account does not have permission to use this service (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also gets this status, but without a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            error:
+              value:
+                code: PERMISSION_REQUIRED
+                error: You do not have permission to use the service.
+    ScorePayloadTooLarge:
+      description: The request body is larger than 20,000 bytes. The response does not have a JSON body.
+    ReportPayloadTooLarge:
+      description: The request body is too large. The response does not have a JSON body.
+    TooManyRequests:
+      description: MaxMind rate-limited the request, usually because of too many earlier error responses. The response may have no body.
+    InternalServerError:
+      description: The service had an unexpected error (`SERVER_ERROR`).
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            error:
+              value:
+                code: SERVER_ERROR
+                error: There was an error when processing this request.
+    ServiceUnavailable:
+      description: The service has a temporary problem. Send the request again later. The response does not have a JSON body.
+  schemas:
+    Account:
+      type: object
+      properties:
+        user_id:
+          type: string
+          maxLength: 255
+          description: Your internal ID for the account. Use an ID that does not change, not a login name that can change. This is not your MaxMind account ID.
+        username_md5:
+          type: string
+          pattern: ^[0-9a-fA-F]{32}$
+          description: An MD5 hash of the account username.
+    Address:
+      type: object
+      description: A billing or shipping address.
+      properties:
+        address:
+          type: string
+          maxLength: 255
+          description: The first line of the street address.
+        address_2:
+          type: string
+          maxLength: 255
+          description: The second line of the street address.
+        city:
+          type: string
+          maxLength: 255
+        company:
+          type: string
+          maxLength: 255
+          description: The company name for the address.
+        country:
+          type: string
+          pattern: ^[A-Z]{2}$
+          description: The two-character ISO 3166-1 alpha-2 country code.
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        phone_country_code:
+          type: string
+          pattern: ^[0-9]{1,4}$
+          description: The international calling code for the phone number.
+        phone_number:
+          type: string
+          maxLength: 255
+          description: The phone number, without the country code. MaxMind strips punctuation characters. After that, the number must contain only digits.
+        postal:
+          type: string
+          maxLength: 255
+          description: The postal code for the address.
+        region:
+          type: string
+          pattern: ^[0-9A-Z]{1,4}$
+          description: The ISO 3166-2 subdivision code.
+    CreditCard:
+      type: object
+      properties:
+        avs_result:
+          type: string
+          pattern: ^[A-Za-z1-4]$
+          description: The address verification system (AVS) check result, as your payment processor returns it. MaxMind supports the standard AVS codes.
+        bank_name:
+          type: string
+          maxLength: 255
+          description: The name of the bank that issued the credit card.
+        bank_phone_country_code:
+          type: string
+          pattern: ^[0-9]{1,4}$
+          description: The international calling code for the bank's phone number.
+        bank_phone_number:
+          type: string
+          maxLength: 255
+          description: The bank's phone number, without the country code. MaxMind strips punctuation characters. After that, the number must contain only digits.
+        country:
+          type: string
+          pattern: ^[A-Z]{2}$
+          description: The two-character ISO 3166-1 country code of the card issuer's location. You can send this instead of `issuer_id_number` if you do not want to send partial account numbers, or if your payment processor does not provide them.
+        cvv_result:
+          type: string
+          pattern: ^[A-Za-z0-9]$
+          description: The card verification value (CVV) check result, as your payment processor returns it.
+        issuer_id_number:
+          type: string
+          pattern: ^([0-9]{6}|[0-9]{8})$
+          description: The first 6 or 8 digits of the credit card number. If you do not know whether the number is 6 or 8 digits long, send 6 digits.
+        last_digits:
+          type: string
+          pattern: ^([0-9]{2}|[0-9]{4})$
+          description: The last 2 or 4 digits of the credit card number. Send the last 4 digits in most cases. If `issuer_id_number` has 8 digits and the card brand is not Discover, JCB, Mastercard, UnionPay, or Visa, send the last 2 digits.
+        token:
+          type: string
+          maxLength: 255
+          pattern: ^[!-~]+$
+          not:
+            pattern: ^[0-9]{1,19}$
+          description: A token that uniquely identifies the card, for example one your payment processor gives you. The token must consist of non-space printable ASCII characters. If the token is all digits, it must be more than 19 characters long. The token must not be a primary account number (PAN) or a simple transformation of one. If a valid token looks like a PAN but is not one, you can prefix it with a fixed string, for example `token-`.
+        was_3d_secure_successful:
+          type: boolean
+          description: Whether the 3-D Secure check for the transaction was successful. Omit this field if 3-D Secure verification was not used, was unavailable, or had another outcome besides success or failure.
+    CustomInputs:
+      type: object
+      description: 'Values for the custom inputs that you configure for your account. Configure each key first, from Custom Inputs in the account portal. Each key must match a key configured for your account, and the value must match the type configured for that key: a boolean, a number from -9999999999999 to 9999999999999, a string of up to 255 characters, or a phone number string of up to 255 characters. MaxMind strips spaces and punctuation from a phone number, and the rest must be digits. A key that your account does not have configured produces an `INPUT_UNKNOWN` warning. Do not send a full credit card number as a value. MaxMind rejects it and returns a warning.'
+      additionalProperties:
+        oneOf:
+          - type: boolean
+          - type: number
+            minimum: -9999999999999
+            maximum: 9999999999999
+          - type: string
+            maxLength: 255
+    Device:
+      type: object
+      properties:
+        accept_language:
+          type: string
+          maxLength: 255
+          description: The HTTP `Accept-Language` header of the device.
+        ip_address:
+          type: string
+          maxLength: 255
+          description: The IPv4 or IPv6 address of the device, in presentation format (dotted-quad notation or IPv6 colon notation). A private or reserved address produces an `IP_ADDRESS_RESERVED` warning.
+        session_age:
+          type: number
+          minimum: 0
+          maximum: 9999999999999
+          description: The number of seconds between the creation of the user's session and the transaction. This is not the length of the current visit. It is the time since the start of the first visit.
+        session_id:
+          type: string
+          maxLength: 255
+          description: An ID that identifies a visitor's session on the site.
+        tracking_token:
+          type: string
+          description: The token that the Device Tracking Add-On client-side code returns for explicit device linking.
+        user_agent:
+          type: string
+          maxLength: 512
+          description: The HTTP `User-Agent` header of the browser used.
+    Email:
+      type: object
+      properties:
+        address:
+          type: string
+          maxLength: 255
+          description: The email address, or the MD5 hash of the normalized email address. Normalize the address before you hash it. See https://dev.maxmind.com/minfraud/normalizing-email-addresses-for-minfraud. A plaintext address must be a valid email address. MaxMind lowercases it, converts an internationalized domain to ASCII, and fixes a few common typos, such as a misspelled `gmail.com`.
+        domain:
+          type: string
+          maxLength: 255
+          description: The domain of the email address. Do not include the `@`. You do not need to send this field unless you send the email address as an MD5 hash. MaxMind lowercases the domain, converts an internationalized domain to ASCII, and fixes a few common typos.
+    Event:
+      type: object
+      properties:
+        party:
+          type: string
+          enum:
+            - agent
+            - customer
+          description: The party that submits the transaction.
+        shop_id:
+          type: string
+          maxLength: 255
+          description: Your internal ID for the shop, affiliate, or merchant the order comes from. Required for a reseller, payment provider, gateway, or affiliate network. If you are testing the minFraud service, prefix your shop ID with `test`, or set it to `test`.
+        time:
+          type: string
+          format: date-time
+          description: |-
+            The time the event occurred, in RFC 3339 format. If you omit this field, MaxMind uses the time it receives the request. Do not send this field for a live transaction. Use it only for a stored transaction that you score later.
+
+            The time must be within the past year. For an older time, MaxMind uses the current time to score the transaction and returns a warning.
+        transaction_id:
+          type: string
+          maxLength: 255
+          description: Your internal ID for the transaction.
+        type:
+          type: string
+          enum:
+            - account_creation
+            - account_login
+            - credit_application
+            - email_change
+            - fund_transfer
+            - password_reset
+            - payout_change
+            - purchase
+            - recurring_purchase
+            - referral
+            - sim_swap
+            - survey
+          description: |-
+            The type of event being scored.
+
+            - `account_creation`: the transactor is creating an account.
+            - `account_login`: the transactor is logging in to an account.
+            - `credit_application`: the transactor is applying for credit.
+            - `email_change`: the transactor is changing the email address on an account.
+            - `fund_transfer`: the transactor is transferring funds between accounts.
+            - `password_reset`: the transactor is resetting a password.
+            - `payout_change`: the transactor is changing how you pay them. Use this for any case where you pay your users and they change how you pay them, such as a referral or survey payout.
+            - `purchase`: the transactor is making a purchase.
+            - `recurring_purchase`: the transactor is setting up a recurring purchase or subscription.
+            - `referral`: the transactor is sending you referral traffic, for example by referring someone to your site with an ad.
+            - `sim_swap`: for a mobile network operator. A new SIM card or eSIM is being issued for a customer's existing phone number.
+            - `survey`: the transactor is starting or completing a survey.
+    Order:
+      type: object
+      properties:
+        affiliate_id:
+          type: string
+          maxLength: 255
+          description: Your internal ID for the affiliate that referred the order.
+        amount:
+          type: number
+          minimum: 0
+          maximum: 9999999999999
+          description: The total order amount before taxes and discounts, in the currency given in `currency`.
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: The ISO 4217 currency code for the order amount.
+        discount_code:
+          type: string
+          maxLength: 255
+          description: The discount code applied to the order. Separate multiple discount codes with a comma.
+        has_gift_message:
+          type: boolean
+          description: Whether the order included a gift message.
+        is_gift:
+          type: boolean
+          description: Whether the order was marked as a gift.
+        referrer_uri:
+          type: string
+          maxLength: 1024
+          format: uri
+          description: The URI of the site that referred the customer to your site. Must be an absolute URI with a scheme, such as `https://`.
+        subaffiliate_id:
+          type: string
+          maxLength: 255
+          description: Your internal ID for the subaffiliate that referred the order.
+    Payment:
+      type: object
+      properties:
+        decline_code:
+          type: string
+          maxLength: 255
+          description: The decline code the payment processor returned. Omit this field if the transaction was not declined.
+        method:
+          type: string
+          enum:
+            - bank_debit
+            - bank_redirect
+            - bank_transfer
+            - buy_now_pay_later
+            - card
+            - crypto
+            - digital_wallet
+            - gift_card
+            - real_time_payment
+            - rewards
+          description: |-
+            The payment method.
+
+            - `bank_debit`: a direct debit of the customer's bank account.
+            - `bank_redirect`: the customer authorizes payment after authenticating with their bank.
+            - `bank_transfer`: the customer pushes funds directly from their bank account.
+            - `buy_now_pay_later`: payment through a buy now, pay later provider, such as Affirm, Afterpay, or Klarna.
+            - `card`: payment by a credit, debit, or charge card.
+            - `crypto`: payment with a cryptocurrency.
+            - `digital_wallet`: payment from a digital wallet linked to a card or bank account, such as Apple Pay, Google Pay, or PayPal.
+            - `gift_card`: payment with a merchant-sponsored gift card.
+            - `real_time_payment`: the customer pushes funds directly from their bank account or another funding source, using an intermediary such as a phone number to authenticate, for example Pix, PayNow, or Swish.
+            - `rewards`: payment with rewards or loyalty program incentives.
+        processor:
+          type: string
+          description: The payment processor used for the transaction.
+          enum:
+            - adyen
+            - affirm
+            - afterpay
+            - altapay
+            - amazon_payments
+            - american_express_payment_gateway
+            - apple_pay
+            - aps_payments
+            - authorizenet
+            - balanced
+            - banquest
+            - beanstream
+            - bluepay
+            - bluesnap
+            - boacompra
+            - boku
+            - bpoint
+            - braintree
+            - cardknox
+            - cardpay
+            - cashfree
+            - ccavenue
+            - ccnow
+            - cetelem
+            - chase_paymentech
+            - checkout_com
+            - cielo
+            - collector
+            - commdoo
+            - compropago
+            - concept_payments
+            - conekta
+            - coregateway
+            - creditguard
+            - credorax
+            - cryptomus
+            - ct_payments
+            - cuentadigital
+            - curopayments
+            - cybersource
+            - dalenys
+            - dalpay
+            - datacap
+            - datacash
+            - dibs
+            - digital_river
+            - dlocal
+            - dotpay
+            - ebs
+            - ecomm365
+            - ecommpay
+            - elavon
+            - emerchantpay
+            - epay
+            - epayco
+            - eprocessing_network
+            - epx
+            - eway
+            - exact
+            - fat_zebra
+            - first_atlantic_commerce
+            - first_data
+            - fiserv
+            - g2a_pay
+            - global_payments
+            - gocardless
+            - google_pay
+            - heartland
+            - hipay
+            - ingenico
+            - interac
+            - internetsecure
+            - intuit_quickbooks_payments
+            - iugu
+            - klarna
+            - komoju
+            - lemon_way
+            - mastercard_payment_gateway
+            - mercadopago
+            - mercanet
+            - merchant_esolutions
+            - mirjeh
+            - mollie
+            - moneris_solutions
+            - neopay
+            - neosurf
+            - nmi
+            - oceanpayment
+            - oney
+            - onpay
+            - openbucks
+            - openpaymx
+            - optimal_payments
+            - orangepay
+            - other
+            - pacnet_services
+            - payconex
+            - payeezy
+            - payfast
+            - paygate
+            - paylike
+            - payment_express
+            - paymentwall
+            - payone
+            - paypal
+            - payplus
+            - paysafecard
+            - paysera
+            - paystation
+            - paytm
+            - paytrace
+            - paytrail
+            - payture
+            - payu
+            - payulatam
+            - payvision
+            - payway
+            - payza
+            - pinpayments
+            - placetopay
+            - posconnect
+            - princeton_payment_solutions
+            - psigate
+            - pxp_financial
+            - qiwi
+            - quickpay
+            - raberil
+            - razorpay
+            - rede
+            - redpagos
+            - rewardspay
+            - safecharge
+            - sagepay
+            - securepay
+            - securetrading
+            - shopify_payments
+            - simplify_commerce
+            - skrill
+            - smartcoin
+            - smartdebit
+            - solidtrust_pay
+            - sps_decidir
+            - stripe
+            - summit_payments
+            - synapsefi
+            - systempay
+            - telerecargas
+            - towah
+            - transact_pro
+            - trustly
+            - trustpay
+            - tsys
+            - usa_epay
+            - vantiv
+            - verepay
+            - vericheck
+            - vindicia
+            - virtual_card_services
+            - vme
+            - vpos
+            - windcave
+            - wirecard
+            - worldpay
+            - yaadpay
+        was_authorized:
+          type: boolean
+          description: Whether the payment was authorized. Omit this field if the transaction has not yet been approved or denied.
+    Shipping:
+      description: A shipping address, with the delivery speed for the order.
+      allOf:
+        - $ref: '#/components/schemas/Address'
+        - type: object
+          properties:
+            delivery_speed:
+              type: string
+              enum:
+                - same_day
+                - overnight
+                - expedited
+                - standard
+              description: The shipping speed selected for the order.
+    ShoppingCartItem:
+      type: object
+      description: An item purchased in the order. You can hash `category` and `item_id` with a cryptographic hash function and a fixed salt to protect customer privacy. Do not use a random salt. A random salt produces a different hash each time for the same value, which defeats fraud detection.
+      properties:
+        category:
+          type: string
+          maxLength: 255
+          description: The category of the item. This can be a hashed value.
+        item_id:
+          type: string
+          maxLength: 255
+          description: Your internal ID for the item. This can be a hashed value.
+        price:
+          type: number
+          minimum: 0
+          maximum: 9999999999999
+          description: The per-unit price of the item. This should use the same currency as the order's `currency`.
+        quantity:
+          type: integer
+          minimum: 0
+          maximum: 9999999999999
+          description: The quantity of the item purchased.
+    Request:
+      type: object
+      description: |-
+        The minFraud request body. Score, Insights, and Factors accept the same request body. Every object is optional. Add more fields to improve accuracy.
+
+        MaxMind can add fields to the request body without a version change. A field that MaxMind does not recognize produces an `INPUT_UNKNOWN` warning.
+
+        A string field allows up to 255 valid Unicode characters unless its schema states a shorter limit. Null and newline characters are not allowed. MaxMind accepts a number sent as a string and a string sent as a number, and converts it to the type the field requires.
+
+        A value that does not meet a field's constraints, such as its pattern, enum, or length, produces an `INPUT_INVALID` warning in the response. The request still succeeds.
+      minProperties: 1
+      properties:
+        account:
+          $ref: '#/components/schemas/Account'
+          description: Information about the account involved in the event.
+        billing:
+          $ref: '#/components/schemas/Address'
+          description: The billing address for the order.
+        credit_card:
+          $ref: '#/components/schemas/CreditCard'
+          description: Information about the credit card used.
+        custom_inputs:
+          $ref: '#/components/schemas/CustomInputs'
+        device:
+          $ref: '#/components/schemas/Device'
+          description: Information about the device used in the transaction.
+        email:
+          $ref: '#/components/schemas/Email'
+          description: Information about the email used in the transaction.
+        event:
+          $ref: '#/components/schemas/Event'
+          description: General information about the event being scored.
+        order:
+          $ref: '#/components/schemas/Order'
+          description: Information about the order.
+        payment:
+          $ref: '#/components/schemas/Payment'
+          description: Information about the payment method used.
+        shipping:
+          $ref: '#/components/schemas/Shipping'
+          description: The shipping address for the order.
+        shopping_cart:
+          type: array
+          description: The items purchased in the order.
+          items:
+            $ref: '#/components/schemas/ShoppingCartItem'
+    Disposition:
+      type: object
+      description: How a custom rule disposed of the request. Not present when your account has no custom rules.
+      properties:
+        action:
+          type: string
+          description: 'How MaxMind handled the request. Known values: `accept`, `reject`, `manual_review`, `test`. MaxMind may add values. `accept` is the default when no custom rule matches. Use `test` to test custom rules.'
+        reason:
+          type: string
+          description: 'Why `action` has its value. Known values: `default`, `custom_rule`. MaxMind may add values.'
+        rule_label:
+          type: string
+          description: The label of the custom rule that was triggered. Not present when you have no custom rules, the triggered rule has no label, or no rule was triggered.
+    Warning:
+      type: object
+      description: |-
+        A warning about an issue with the request. The `code` values below are the current set. MaxMind can add more.
+
+        - `BILLING_CITY_NOT_FOUND`: the billing city is not in the MaxMind database.
+        - `BILLING_COUNTRY_MISSING`: billing address fields are present but `country` is not.
+        - `BILLING_COUNTRY_NOT_FOUND`: the billing country is not in the MaxMind database.
+        - `BILLING_POSTAL_NOT_FOUND`: the billing postal code is not in the MaxMind database.
+        - `BILLING_REGION_NOT_FOUND`: the billing region is not in the MaxMind database.
+        - `EMAIL_ADDRESS_UNUSABLE`: the email address looks incorrect, so MaxMind left it out of scoring.
+        - `INPUT_INVALID`: a value does not meet the field's constraints.
+        - `INPUT_UNKNOWN`: the request has a key MaxMind does not recognize.
+        - `IP_ADDRESS_INVALID`: the IP address is not a valid IPv4 or IPv6 address.
+        - `IP_ADDRESS_NOT_FOUND`: MaxMind could not geolocate the IP address.
+        - `IP_ADDRESS_RESERVED`: the IP address is in a reserved network.
+        - `SHIPPING_CITY_NOT_FOUND`: the shipping city is not in the MaxMind database.
+        - `SHIPPING_COUNTRY_MISSING`: shipping address fields are present but `country` is not.
+        - `SHIPPING_COUNTRY_NOT_FOUND`: the shipping country is not in the MaxMind database.
+        - `SHIPPING_POSTAL_NOT_FOUND`: the shipping postal code is not in the MaxMind database.
+        - `SHIPPING_REGION_NOT_FOUND`: the shipping region is not in the MaxMind database.
+        - `TRACKING_TOKEN_INVALID`: the tracking token is malformed.
+        - `TRACKING_TOKEN_NOT_FOUND`: MaxMind does not recognize the tracking token.
+
+        The address warnings can reduce the accuracy of distance calculations.
+      properties:
+        code:
+          type: string
+          maxLength: 255
+        input_pointer:
+          type: string
+          description: A JSON Pointer to the request field the warning is about, for example `/billing/city` or `/shopping_cart/1/price`.
+        warning:
+          type: string
+          description: A human-readable explanation of the warning. The text can change at any time.
+    ScoreBase:
+      type: object
+      description: The fields common to the minFraud Score, Insights, and Factors responses, apart from `ip_address`. Score, Insights, and Factors each have a different shape for `ip_address`.
+      properties:
+        disposition:
+          $ref: '#/components/schemas/Disposition'
+          description: How a custom rule disposed of the request.
+        funds_remaining:
+          type: number
+          minimum: 0
+          description: The approximate US dollar value of the funds left on your account.
+        id:
+          type: string
+          format: uuid
+          description: The minFraud ID for this response. Use it to find the request in your minFraud logs, or when you contact MaxMind support.
+        queries_remaining:
+          type: integer
+          minimum: 0
+          description: The approximate number of queries left for this service before your account runs out of funds.
+        risk_score:
+          type: number
+          minimum: 0.01
+          maximum: 99
+          description: The overall risk score, from 0.01 to 99. A higher score means a higher risk of fraud. For example, a score of 20 means a 20% chance that the transaction is fraudulent. MaxMind never returns 0 or 100, since every transaction carries some possibility of fraud.
+        warnings:
+          type: array
+          description: Issues with the request, such as an invalid or unknown input.
+          items:
+            $ref: '#/components/schemas/Warning'
+      required:
+        - id
+        - risk_score
+        - funds_remaining
+        - queries_remaining
+    ScoreIPAddress:
+      type: object
+      description: The risk for the IP address, as returned by minFraud Score.
+      properties:
+        risk:
+          type: number
+          minimum: 0.01
+          maximum: 99
+          description: The risk for the IP address, from 0.01 to 99. A higher value means higher risk.
+    Score:
+      description: The minFraud Score response.
+      allOf:
+        - $ref: '#/components/schemas/ScoreBase'
+        - type: object
+          properties:
+            ip_address:
+              $ref: '#/components/schemas/ScoreIPAddress'
+              description: The risk associated with the IP address.
+    Error:
+      type: object
+      description: Not all error responses have a JSON body. Check the `Content-Type` header before you decode the body as JSON.
+      required:
+        - code
+        - error
+      properties:
+        code:
+          type: string
+          description: A static error code for machine use. The meaning of a code never changes, but MaxMind can add or remove codes.
+          examples:
+            - IP_ADDRESS_INVALID
+        error:
+          type: string
+          description: A human-readable description of the error. The text can change at any time.
+          examples:
+            - The value '1.2.3' is not a valid IP address.
+    AddressInsights:
+      type: object
+      description: minFraud risk data about a billing address.
+      properties:
+        distance_to_ip_location:
+          type: integer
+          description: The distance, in kilometers, from the address to the IP address's location. When MaxMind cannot locate the address or the IP address more precisely, it uses country or subdivision coordinates, which can make this distance inaccurate.
+        is_in_ip_country:
+          type: boolean
+          description: True if the address is in the IP address's country. Present only when MaxMind can geolocate the IP address and the address was given.
+        is_postal_in_city:
+          type: boolean
+          description: True if the postal code is in the city for the address. Present only when the postal code, city, and country were all given. MaxMind matches the postal code against the GeoNames preferred place name for a US ZIP code. An alternative place name for a US ZIP code might not produce a match.
+        latitude:
+          type: number
+          description: The approximate WGS 84 latitude for the address. The coordinates are not precise. Do not use them to identify a street address or household.
+        longitude:
+          type: number
+          description: The approximate WGS 84 longitude for the address. The coordinates are not precise. Do not use them to identify a street address or household.
+    Phone:
+      type: object
+      description: minFraud risk data about a billing or shipping phone number.
+      properties:
+        country:
+          type: string
+          description: The two-character ISO 3166-1 country code for the phone number.
+        is_voip:
+          type: boolean
+          description: True if the phone number is a VoIP number allocated by a regulator. Present only for a valid phone number that MaxMind has data for.
+        matches_postal:
+          type: boolean
+          description: True if the phone number's prefix is commonly associated with the postal code. Present only for a US number when MaxMind has the number's prefix, and the postal code and country were also given.
+        network_operator:
+          type: string
+          description: The original network operator associated with the phone number. This does not reflect a number ported to another operator, and it does not identify a mobile virtual network operator.
+        number_type:
+          type: string
+          description: 'The phone number''s type. Known values: `fixed`, `mobile`. MaxMind may add values.'
+    CreditCardIssuer:
+      type: object
+      description: minFraud risk data about a credit card's issuing bank.
+      properties:
+        matches_provided_name:
+          type: boolean
+          description: True if `name` matches the issuer name given in the request. Present only when the request gives both a name and an issuer ID number, and MaxMind has a name for that issuer ID number.
+        matches_provided_phone_number:
+          type: boolean
+          description: True if `phone_number` matches the issuer phone number given in the request. Present only when the request gives both a phone number and an issuer ID number, and MaxMind has a phone number for that issuer ID number.
+        name:
+          type: string
+          maxLength: 255
+          description: The name of the issuing bank.
+        phone_number:
+          type: string
+          maxLength: 255
+          description: The phone number of the issuing bank. This number can be out of date.
+    ResponseCreditCard:
+      type: object
+      description: minFraud risk data about the credit card. Present only when the request includes an issuer ID number.
+      properties:
+        brand:
+          type: string
+          maxLength: 255
+          description: The card brand, for example "Visa" or "Discover".
+        country:
+          type: string
+          pattern: ^[A-Z]{2}$
+          description: The two-character ISO 3166-1 country code for the majority of customers using this card, by billing address. If customers are spread across countries, this is the country of the issuing bank instead.
+        is_business:
+          type: boolean
+          description: True if the issuer ID number is for a business card. Present only when a valid issuer ID number was given.
+        is_issued_in_billing_address_country:
+          type: boolean
+          description: True if the billing address country matches the country of the majority of customers using this issuer ID number. Present only when both countries are known. When the customers for this issuer ID number are spread across many countries, MaxMind matches against the country of the issuing bank instead.
+        is_prepaid:
+          type: boolean
+          description: True if the issuer ID number is for a prepaid card. Present only when a valid issuer ID number was given.
+        is_virtual:
+          type: boolean
+          description: True if the issuer ID number is for a virtual card. Present only when a valid issuer ID number was given.
+        issuer:
+          $ref: '#/components/schemas/CreditCardIssuer'
+          description: Data about the bank that issued the card.
+        type:
+          type: string
+          description: 'The card''s type. Known values: `charge`, `credit`, `debit`. MaxMind may add values.'
+    ResponseDevice:
+      type: object
+      description: Data about the device MaxMind associates with the IP address in the request.
+      properties:
+        confidence:
+          type: number
+          minimum: 0.01
+          maximum: 99
+          description: MaxMind's confidence that `id` refers to a unique device rather than a cluster of similar devices, from 0.01 to 99. A higher value means higher confidence.
+        id:
+          type: string
+          format: uuid
+          description: MaxMind's ID for the device. Present only when the Device Tracking Add-On is in use.
+        last_seen:
+          type: string
+          format: date-time
+          description: The date and time MaxMind last saw the device, in RFC 3339 format.
+        local_time:
+          type: string
+          format: date-time
+          description: The local date and time of the transaction in the device's time zone, using the device's UTC offset, in RFC 3339 format.
+    EmailDomainVisit:
+      type: object
+      description: Data from an automated visit to the email domain. Not present for a high-volume domain, such as one for a large email provider or business, and can be delayed for a newly-seen domain.
+      properties:
+        has_redirect:
+          type: boolean
+          description: True if the domain redirects to another URL. Absent, not `false`, when the domain does not redirect. When true, `status` describes the domain the visit redirected to.
+        last_visited_on:
+          type: string
+          format: date
+          description: The date of the automated visit.
+        status:
+          type: string
+          description: 'The status of the domain, or of the domain a redirect led to, as of the automated visit. Known values: `live`, `dns_error`, `network_error`, `http_error`, `parked`, `pre_development`. MaxMind may add values.'
+    EmailDomain:
+      type: object
+      description: minFraud risk data about an email domain.
+      properties:
+        classification:
+          type: string
+          description: 'A classification of the domain. Known values: `business`, `education`, `government`, `isp_email`. MaxMind may add values.'
+        first_seen:
+          type: string
+          format: date
+          description: The date MaxMind first saw the email domain. The earliest possible date is 2019-01-01.
+        risk:
+          type: number
+          minimum: 0.01
+          maximum: 99
+          description: The risk associated with the domain, from 0.01 to 99. A higher value means higher risk.
+        visit:
+          $ref: '#/components/schemas/EmailDomainVisit'
+          description: Data from an automated visit to the email domain.
+        volume:
+          type: number
+          minimum: 0.001
+          maximum: 1000000
+          description: The activity MaxMind sees on this email domain across the minFraud network, in sightings per million requests. The value is rounded to 2 significant figures.
+    ResponseEmail:
+      type: object
+      description: Email intelligence data.
+      properties:
+        domain:
+          $ref: '#/components/schemas/EmailDomain'
+          description: Data about the email domain.
+        first_seen:
+          type: string
+          format: date
+          description: The date MaxMind first saw the email address. The earliest possible date is 2008-01-01.
+        is_disposable:
+          type: boolean
+          description: True if MaxMind believes the email address is from a disposable email provider. Present only when the request gives a valid email address or domain.
+        is_free:
+          type: boolean
+          description: True if MaxMind believes the email domain is for a free provider, such as Gmail or Yahoo! Mail. Present only when the request gives a valid email address or domain.
+        is_high_risk:
+          type: boolean
+          description: True if MaxMind believes the email address is likely to be used for fraud. This is also factored into `risk_score`. Present only when the request gives a valid email address or hash.
+    AnonymizerResidential:
+      type: object
+      description: Data about the residential proxy network associated with an IP address. Only in the Insights response.
+      properties:
+        confidence:
+          type: integer
+          minimum: 1
+          maximum: 99
+          description: MaxMind's confidence that the network is an actively used residential proxy, from 1 to 99.
+        network_last_seen:
+          type: string
+          format: date
+          description: The last date MaxMind saw the network in its residential proxy analysis.
+        provider_name:
+          type: string
+          description: The name of the residential proxy provider, for example `oxylabs`. MaxMind identifies only a subset of residential proxy providers.
+    Anonymizer:
+      type: object
+      description: Whether an IP address is part of an anonymizing service or network. Only in the Insights response.
+      properties:
+        confidence:
+          type: integer
+          minimum: 1
+          maximum: 99
+          description: MaxMind's confidence that the network is an actively used VPN, from 1 to 99. MaxMind currently returns only 30 or 99, and will add more values over time.
+        is_anonymous:
+          type: boolean
+          description: True if the IP address belongs to any anonymous network.
+        is_anonymous_vpn:
+          type: boolean
+          description: True if the IP address belongs to an anonymous VPN provider. Some VPN providers register their ranges under other names, so MaxMind may flag them with `is_hosting_provider` instead.
+        is_hosting_provider:
+          type: boolean
+          description: True if the IP address belongs to a hosting provider.
+        is_public_proxy:
+          type: boolean
+          description: True if the IP address belongs to a public proxy.
+        is_residential_proxy:
+          type: boolean
+          description: True if the IP address is on a suspected anonymizing network and belongs to a residential ISP. This excludes peer-to-peer proxy IP addresses.
+        is_tor_exit_node:
+          type: boolean
+          description: True if the IP address is a Tor exit node.
+        network_last_seen:
+          type: string
+          format: date
+          description: The last date MaxMind saw the network in its anonymizer analysis.
+        provider_name:
+          type: string
+          description: The name of the VPN provider, for example `nordvpn`. MaxMind identifies only a subset of VPN providers.
+        residential:
+          $ref: '#/components/schemas/AnonymizerResidential'
+    Names:
+      type: object
+      description: 'A map from a locale code to the localized name for the entity. Known locale codes: de, en, es, fr, ja, pt-BR, ru, zh-CN. If the entity has name data, en is present. No other locale is guaranteed. Names can change between releases. Do not use them as keys. Use `geoname_id`, `iso_code`, or `code`.'
+      additionalProperties:
+        type: string
+    City:
+      type: object
+      description: The city associated with an IP address.
+      properties:
+        geoname_id:
+          type: integer
+          minimum: 0
+          description: The GeoNames ID for the city.
+        names:
+          $ref: '#/components/schemas/Names'
+    CityWithConfidence:
+      description: A city associated with an IP address, with MaxMind's confidence in the result. Only the Insights response's `city` object includes `confidence`.
+      allOf:
+        - $ref: '#/components/schemas/City'
+        - type: object
+          properties:
+            confidence:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: MaxMind's confidence that the city is correct, from 0 to 100.
+    Continent:
+      type: object
+      description: The continent associated with an IP address.
+      properties:
+        code:
+          type: string
+          description: The two-character code for the continent.
+          enum:
+            - AF
+            - AN
+            - AS
+            - EU
+            - NA
+            - OC
+            - SA
+        geoname_id:
+          type: integer
+          minimum: 0
+          description: The GeoNames ID for the continent.
+        names:
+          $ref: '#/components/schemas/Names'
+    Country:
+      type: object
+      description: A country associated with an IP address.
+      properties:
+        geoname_id:
+          type: integer
+          minimum: 0
+          description: The GeoNames ID for the country.
+        iso_code:
+          type: string
+          description: The two-character ISO 3166-1 country code.
+        is_in_european_union:
+          type: boolean
+          description: True if the country is a member state of the European Union.
+        names:
+          $ref: '#/components/schemas/Names'
+    CountryWithConfidence:
+      description: A country associated with an IP address, with MaxMind's confidence in the result. Only the Insights response's `country` object includes `confidence`.
+      allOf:
+        - $ref: '#/components/schemas/Country'
+        - type: object
+          properties:
+            confidence:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: MaxMind's confidence that the country is correct, from 0 to 100.
+    InsightsIPAddressCountry:
+      description: A country associated with an IP address, with MaxMind's confidence in the result and whether MaxMind considers the country high-risk.
+      allOf:
+        - $ref: '#/components/schemas/CountryWithConfidence'
+        - type: object
+          properties:
+            is_high_risk:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if MaxMind considers the IP address's country to be high-risk.
+    Location:
+      type: object
+      description: Location details for an IP address.
+      properties:
+        accuracy_radius:
+          type: integer
+          minimum: 0
+          description: The approximate accuracy radius, in kilometers, around the latitude and longitude. MaxMind has 67% confidence that the true location falls within this radius of the coordinates.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: The approximate WGS 84 latitude for the location. The coordinates are not precise. Do not use them to identify a street address or household. When you show the coordinates, also show `accuracy_radius`.
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          description: The approximate WGS 84 longitude for the location. The coordinates are not precise. Do not use them to identify a street address or household. When you show the coordinates, also show `accuracy_radius`.
+        metro_code:
+          type: integer
+          minimum: 0
+          deprecated: true
+          description: Deprecated. A code that Google previously used to target ads. MaxMind no longer maintains this code.
+        time_zone:
+          type: string
+          description: The IANA time zone for the location, for example `America/New_York`.
+    InsightsLocation:
+      description: Location details for an IP address, including the fields the Insights response adds beyond City Plus.
+      allOf:
+        - $ref: '#/components/schemas/Location'
+        - type: object
+          properties:
+            average_income:
+              type: integer
+              minimum: 0
+              description: The average annual income, in US dollars, for the IP address's location. Only available for IP addresses in the US.
+            population_density:
+              type: integer
+              minimum: 0
+              description: The estimated number of people per square kilometer at the IP address's location. Only available for IP addresses in the US.
+    InsightsIPAddressLocation:
+      description: Location details for an IP address, including the local time at that location.
+      allOf:
+        - $ref: '#/components/schemas/InsightsLocation'
+        - type: object
+          properties:
+            local_time:
+              type: string
+              format: date-time
+              description: The date and time of the transaction in the time zone associated with the IP address, in RFC 3339 format.
+    Postal:
+      type: object
+      description: The postal code associated with an IP address.
+      properties:
+        code:
+          type: string
+          description: 'A postal code close to the IP address''s location. For some countries, MaxMind returns only part of the code, with this many characters: Brazil 5, Canada 3, Ireland 3, Japan 7, Netherlands 4, Portugal 7, Singapore 2, United Kingdom 2-4, United States 5. For Japan, the last digit defaults to 1. For Portugal, the last 3 digits often default to `-001`.'
+    PostalWithConfidence:
+      description: A postal code associated with an IP address, with MaxMind's confidence in the result. Only the Insights response's `postal` object includes `confidence`.
+      allOf:
+        - $ref: '#/components/schemas/Postal'
+        - type: object
+          properties:
+            confidence:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: MaxMind's confidence that the postal code is correct, from 0 to 100.
+    RepresentedCountry:
+      description: The country represented by users of an IP address, for example the country represented by an overseas military base.
+      allOf:
+        - $ref: '#/components/schemas/Country'
+        - type: object
+          properties:
+            type:
+              type: string
+              description: 'The type of represented country. Known value: military. MaxMind may add other values.'
+    IPRiskReason:
+      type: object
+      description: |-
+        A reason why an IP address received its risk. The `code` values below are the current set. MaxMind can add more.
+
+        - `ANONYMOUS_IP`: the IP address belongs to an anonymous network.
+        - `BILLING_POSTAL_VELOCITY`: many billing postal codes have been seen on this IP address.
+        - `EMAIL_VELOCITY`: many email addresses have been seen on this IP address.
+        - `HIGH_RISK_DEVICE`: a high-risk device was seen on this IP address.
+        - `HIGH_RISK_EMAIL`: a high-risk email address was seen on this IP address in your past transactions.
+        - `ISSUER_ID_NUMBER_VELOCITY`: many issuer ID numbers have been seen on this IP address.
+        - `MINFRAUD_NETWORK_ACTIVITY`: MaxMind has seen suspicious activity on this IP address across minFraud customers.
+      properties:
+        code:
+          type: string
+          maxLength: 255
+        reason:
+          type: string
+          description: A human-readable explanation of the reason. The text can change at any time.
+    Subdivision:
+      type: object
+      description: A subdivision of the country associated with an IP address.
+      properties:
+        geoname_id:
+          type: integer
+          minimum: 0
+          description: The GeoNames ID for the subdivision.
+        iso_code:
+          type: string
+          description: Up to three characters from the ISO 3166-2 code for the subdivision.
+        names:
+          $ref: '#/components/schemas/Names'
+    SubdivisionWithConfidence:
+      description: A subdivision of the country associated with an IP address, with MaxMind's confidence in the result. Only the Insights response's `subdivisions` entries include `confidence`.
+      allOf:
+        - $ref: '#/components/schemas/Subdivision'
+        - type: object
+          properties:
+            confidence:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: MaxMind's confidence that the subdivision is correct, from 0 to 100.
+    CountryTraits:
+      type: object
+      description: General traits for an IP address, as returned by the Country response.
+      required:
+        - ip_address
+        - network
+      properties:
+        ip_address:
+          type: string
+          description: The IPv4 or IPv6 address that was looked up.
+        is_anycast:
+          type: boolean
+          description: True if the IP address belongs to an anycast network.
+        network:
+          type: string
+          description: The largest network, in CIDR notation, that shares the same data as this record, apart from `ip_address` itself.
+    CityTraits:
+      description: General traits for an IP address, including the fields the City Plus response adds beyond Country.
+      allOf:
+        - $ref: '#/components/schemas/CountryTraits'
+        - type: object
+          properties:
+            autonomous_system_number:
+              type: integer
+              minimum: 0
+              description: The autonomous system number for the IP address.
+            autonomous_system_organization:
+              type: string
+              description: The organization for the autonomous system number.
+            connection_type:
+              type: string
+              description: 'The connection type for the IP address. Known values: `Cable/DSL`, `Cellular`, `Corporate`, `Satellite`. MaxMind may add values. GeoLite City does not include this field.'
+            domain:
+              type: string
+              description: The second-level domain for the IP address, for example `example.com`. This is not a subdomain such as `foo.example.com`. GeoLite City does not include this field.
+            isp:
+              type: string
+              description: The ISP for the IP address. GeoLite City does not include this field.
+            mobile_country_code:
+              type: string
+              description: The mobile country code (MCC) for the IP address and ISP. GeoLite City does not include this field.
+            mobile_network_code:
+              type: string
+              description: The mobile network code (MNC) for the IP address and ISP. GeoLite City does not include this field.
+            organization:
+              type: string
+              description: The organization for the IP address. GeoLite City does not include this field.
+    InsightsTraits:
+      description: General traits for an IP address, including the fields the Insights response adds beyond City Plus.
+      allOf:
+        - $ref: '#/components/schemas/CityTraits'
+        - type: object
+          properties:
+            ip_risk_snapshot:
+              type: number
+              minimum: 0.01
+              maximum: 99
+              description: A snapshot of the risk for the IP address, from 0.01 to 99. A higher value means higher risk. This score changes less often than the equivalent minFraud score and does not respond to traffic on your network. MaxMind omits this field when it has no signals for the network or when the signals show the network is low risk.
+            is_anonymous:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address belongs to any anonymous network. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_anonymous_vpn:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address belongs to an anonymous VPN provider. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_hosting_provider:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address belongs to a hosting provider. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_public_proxy:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address belongs to a public proxy. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_residential_proxy:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address is on a suspected anonymizing network and belongs to a residential ISP. This excludes peer-to-peer proxy IP addresses. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_tor_exit_node:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address is a Tor exit node. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            static_ip_score:
+              type: number
+              minimum: 0
+              maximum: 99.99
+              description: How static the IP address is, from 0 to 99.99. A higher value means a more static address.
+            user_count:
+              type: integer
+              minimum: 0
+              description: The estimated number of users on the IP address or network in the past 24 hours. For IPv4, this counts the single IP address. For IPv6, this counts the /64 network.
+            user_type:
+              type: string
+              description: 'The user type for the IP address. Known values: `business`, `cafe`, `cellular`, `college`, `consumer_privacy_network`, `content_delivery_network`, `government`, `hosting`, `library`, `military`, `residential`, `router`, `school`, `search_engine_spider`, `traveler`.'
+    InsightsIPAddress:
+      type: object
+      description: IP intelligence for the IP address, as returned by minFraud Insights and Factors. This is the GeoIP Insights response body, with `risk` and `risk_reasons` added, `is_high_risk` added to `country`, `local_time` added to `location`, and no `maxmind` object. Every field can be absent if MaxMind has no data for the IP address.
+      properties:
+        anonymizer:
+          $ref: '#/components/schemas/Anonymizer'
+          description: Anonymizer data for the IP address.
+        city:
+          $ref: '#/components/schemas/CityWithConfidence'
+          description: The city for the IP address.
+        continent:
+          $ref: '#/components/schemas/Continent'
+          description: The continent for the IP address.
+        country:
+          $ref: '#/components/schemas/InsightsIPAddressCountry'
+          description: The country where MaxMind believes the IP address's user is located.
+        location:
+          $ref: '#/components/schemas/InsightsIPAddressLocation'
+          description: Location details for the IP address.
+        postal:
+          $ref: '#/components/schemas/PostalWithConfidence'
+          description: The postal code for the IP address.
+        registered_country:
+          $ref: '#/components/schemas/Country'
+          description: The country where the ISP registered the IP address.
+        represented_country:
+          $ref: '#/components/schemas/RepresentedCountry'
+        risk:
+          type: number
+          minimum: 0.01
+          maximum: 99
+          description: The risk for the IP address, from 0.01 to 99. A higher value means higher risk.
+        risk_reasons:
+          type: array
+          description: Why the IP address received its risk.
+          items:
+            $ref: '#/components/schemas/IPRiskReason'
+        subdivisions:
+          type: array
+          description: The subdivisions of the country associated with the IP address, ordered from largest to smallest.
+          items:
+            $ref: '#/components/schemas/SubdivisionWithConfidence'
+        traits:
+          $ref: '#/components/schemas/InsightsTraits'
+          description: General traits for the IP address.
+    ShippingAddressInsights:
+      description: minFraud risk data about a shipping address.
+      allOf:
+        - $ref: '#/components/schemas/AddressInsights'
+        - type: object
+          properties:
+            distance_to_billing_address:
+              type: integer
+              description: The distance, in kilometers, from the shipping address to the billing address. When MaxMind cannot locate an address more precisely, it uses country or subdivision coordinates, which can make this distance inaccurate.
+            is_high_risk:
+              type: boolean
+              description: True if MaxMind associates the shipping address with fraudulent transactions. Present only when a shipping address was given.
+    Insights:
+      description: The minFraud Insights response. It has every field in the Score response, plus more IP intelligence and risk factor data.
+      allOf:
+        - $ref: '#/components/schemas/ScoreBase'
+        - type: object
+          properties:
+            billing_address:
+              $ref: '#/components/schemas/AddressInsights'
+              description: Data about the billing address.
+            billing_phone:
+              $ref: '#/components/schemas/Phone'
+              description: Data about the billing phone number.
+            credit_card:
+              $ref: '#/components/schemas/ResponseCreditCard'
+              description: Data about the credit card. Present only when the request includes an issuer ID number.
+            device:
+              $ref: '#/components/schemas/ResponseDevice'
+              description: Data about the device MaxMind associates with the IP address in the request.
+            email:
+              $ref: '#/components/schemas/ResponseEmail'
+              description: Email intelligence data.
+            ip_address:
+              $ref: '#/components/schemas/InsightsIPAddress'
+              description: IP intelligence data.
+            shipping_address:
+              $ref: '#/components/schemas/ShippingAddressInsights'
+              description: Data about the shipping address.
+            shipping_phone:
+              $ref: '#/components/schemas/Phone'
+              description: Data about the shipping phone number.
+    CodeAndReason:
+      type: object
+      description: 'A machine-readable code and a human-readable reason for part of the risk score. MaxMind can add codes. Known examples: `ANONYMOUS_IP`, `COUNTRY`, `ORG_DISTANCE_RISK`.'
+      properties:
+        code:
+          type: string
+          maxLength: 255
+          description: A machine-readable code that identifies the reason.
+        reason:
+          type: string
+          description: A human-readable explanation of the reason. The text can change at any time.
+    RiskScoreReason:
+      type: object
+      description: A reason for part of the risk score. Usually present only for a medium to high risk transaction.
+      properties:
+        multiplier:
+          type: number
+          minimum: 0.01
+          maximum: 100
+          description: The factor by which the reasons in `reasons` change the risk score. A value above 1 raises the score. A value below 1 lowers it.
+        reasons:
+          type: array
+          description: The reasons for the multiplier.
+          items:
+            $ref: '#/components/schemas/CodeAndReason'
+    Factors:
+      description: The minFraud Factors response. It has every field in the Insights response, plus the risk score reasons.
+      allOf:
+        - $ref: '#/components/schemas/Insights'
+        - type: object
+          properties:
+            risk_score_reasons:
+              type: array
+              description: The reasons for the risk score. Usually present only for a medium to high risk transaction. Not present when no reason changed the score significantly.
+              items:
+                $ref: '#/components/schemas/RiskScoreReason'
+    TransactionReport:
+      type: object
+      description: A report of a transaction as fraud, legitimate, or another outcome. You must give at least one of `ip_address`, `maxmind_id`, `minfraud_id`, and `transaction_id`. Give as many of them as you have. This helps MaxMind match the report to the original transaction.
+      required:
+        - tag
+      additionalProperties: false
+      anyOf:
+        - required:
+            - ip_address
+        - required:
+            - maxmind_id
+        - required:
+            - minfraud_id
+        - required:
+            - transaction_id
+      properties:
+        chargeback_code:
+          type: string
+          description: The reason code your payment processor gives for a chargeback.
+        ip_address:
+          type: string
+          anyOf:
+            - format: ipv4
+            - format: ipv6
+          description: The IP address of the customer placing the order.
+        maxmind_id:
+          type: string
+          pattern: ^[0-9A-Z]{8}$
+          description: The eight-character ID for a minFraud Legacy request. MaxMind returns this in the `maxmindID` field of a minFraud Legacy response. The value must be one MaxMind returned. The value is case sensitive and has only digits and uppercase letters.
+        minfraud_id:
+          type: string
+          format: uuid
+          description: The minFraud ID for a minFraud Score, Insights, or Factors request. MaxMind returns this at `/id` in the response.
+        notes:
+          type: string
+          maxLength: 1000
+          description: Your notes on the tag for this transaction.
+        tag:
+          type: string
+          enum:
+            - chargeback
+            - clear
+            - not_fraud
+            - spam_or_abuse
+            - suspected_fraud
+          description: |-
+            How likely you believe the transaction is to be fraudulent.
+
+            - `chargeback`: associate a chargeback with the transaction.
+            - `clear`: retract a previous report, because the initial classification was incorrect.
+            - `not_fraud`: the transaction was a false positive.
+            - `spam_or_abuse`: the transaction was linked to spam or abuse.
+            - `suspected_fraud`: a high-risk transaction where fraud has not yet been confirmed.
+        transaction_id:
+          type: string
+          minLength: 1
+          description: The transaction ID you gave in the original minFraud request.
+    DispositionUpdate:
+      type: object
+      required:
+        - minfraud_id
+      properties:
+        action:
+          type:
+            - string
+            - 'null'
+          description: 'The transaction''s most recent disposition action. Known values: `accept`, `reject`, `manual_review`, and `expired_review`, which means the one-week manual review period expired before review.'
+        action_last_updated:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          description: The date and time the disposition action was last updated, in RFC 3339 format with microsecond precision.
+        minfraud_id:
+          type: string
+          format: uuid
+          description: The transaction's minFraud ID.
+        note:
+          type:
+            - string
+            - 'null'
+          maxLength: 500
+          description: The transaction's most recent note. Null if no note is set.
+        note_last_updated:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          description: The date and time the note was last updated, in RFC 3339 format with microsecond precision. Null if the transaction never had a note.
+    DispositionUpdatesResponse:
+      type: object
+      required:
+        - last_update_timestamp
+        - updates
+      properties:
+        last_update_timestamp:
+          type: string
+          format: date-time
+          description: The sort timestamp of the last transaction in `updates`, in RFC 3339 format with microsecond precision. This can differ from that transaction's `action_last_updated` and `note_last_updated`. Pass this value as `updates_after` in your next request. An empty `updates` array means there are no updates after `updates_after` yet. This value is then not a transaction's timestamp, so keep your current `updates_after` for the next request.
+        updates:
+          type: array
+          description: The transactions with a disposition or note update after `updates_after`, including a transaction whose manual review period expired. MaxMind sorts by the earliest update timestamp, either the disposition or the note, after `updates_after`. A response usually holds at most 1000 updated transactions. Do not rely on this limit. A transaction can appear in more than one response, for example when its note changes after its disposition, so process updates idempotently.
+          items:
+            $ref: '#/components/schemas/DispositionUpdate'
+  examples:
+    request:
+      summary: minFraud request body
+      value:
+        account:
+          user_id: '3132'
+          username_md5: 570a90bfbf8c7eab5dc5d4e26832d5b1
+        billing:
+          address: 400 Blake St.
+          address_2: Suite 5
+          city: New Haven
+          company: Big Corp.
+          country: US
+          first_name: John
+          last_name: Doe
+          phone_country_code: '1'
+          phone_number: 203-000-0000
+          postal: '06511'
+          region: CT
+        credit_card:
+          avs_result: 'Y'
+          bank_name: Bank of America
+          bank_phone_country_code: '1'
+          bank_phone_number: 800-342-1232
+          country: US
+          cvv_result: 'N'
+          issuer_id_number: '323132'
+          last_digits: '7643'
+          token: OQRST14PLQ98323
+          was_3d_secure_successful: true
+        custom_inputs:
+          a_custom_input_key: NSC0083121
+          another_custom_input_key: false
+        device:
+          accept_language: en-US,en;q=0.8
+          ip_address: 2001:db8::ff00:42:8329
+          session_age: 3600.5
+          session_id: c2ffa1b7-f5c5-4702-beb2-4254794fe391
+          user_agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36
+        email:
+          address: 977577b140bfb7c516e4746204fbdb01
+          domain: maxmind.com
+        event:
+          party: customer
+          shop_id: s2123
+          transaction_id: txn3134133
+          type: purchase
+        order:
+          affiliate_id: af12
+          amount: 323.21
+          currency: USD
+          discount_code: FIRST
+          has_gift_message: false
+          is_gift: true
+          referrer_uri: http://www.google.com/
+          subaffiliate_id: saf42
+        payment:
+          decline_code: card_declined
+          method: card
+          processor: stripe
+          was_authorized: false
+        shipping:
+          address: 82 Wall St.
+          address_2: '#1'
+          city: New Haven
+          company: Smaller, Inc.
+          country: US
+          delivery_speed: same_day
+          first_name: Jane
+          last_name: Doe
+          phone_country_code: '1'
+          phone_number: 203-000-0000
+          postal: '06515'
+          region: CT
+        shopping_cart:
+          - category: pets
+            item_id: ad23232
+            price: 20.43
+            quantity: 2
+          - category: beauty
+            item_id: bst112
+            price: 100
+            quantity: 1
+    score:
+      summary: minFraud Score response
+      value:
+        disposition:
+          action: accept
+          reason: default
+          rule_label: my_custom_rule
+        funds_remaining: 25
+        id: 5bc5d6c2-b2c8-40af-87f4-6d61af86b6ae
+        ip_address:
+          risk: 0.01
+        queries_remaining: 5000
+        risk_score: 0.01
+        warnings:
+          - code: INPUT_INVALID
+            input_pointer: /shipping/city
+            warning: Encountered value at /shipping/city that does not meet the required constraints
+    score-bad-request:
+      summary: Score REQUEST_INVALID response
+      value:
+        code: REQUEST_INVALID
+        error: The request did not contain any valid input values.
+    error:
+      summary: minFraud error response
+      value:
+        code: INSUFFICIENT_FUNDS
+        error: You do not have sufficient funds to use this service.
+    insights:
+      summary: minFraud Insights response
+      value:
+        disposition:
+          action: accept
+          reason: default
+          rule_label: my_custom_rule
+        funds_remaining: 25
+        id: 5bc5d6c2-b2c8-40af-87f4-6d61af86b6ae
+        ip_address:
+          risk: 0.01
+          anonymizer:
+            confidence: 99
+            is_anonymous: true
+            is_anonymous_vpn: true
+            is_hosting_provider: true
+            is_public_proxy: true
+            is_residential_proxy: true
+            is_tor_exit_node: true
+            network_last_seen: '2025-01-15'
+            provider_name: nordvpn
+            residential:
+              confidence: 82
+              network_last_seen: '2026-05-11'
+              provider_name: quickshift
+          city:
+            confidence: 25
+            geoname_id: 54321
+            names:
+              de: Los Angeles
+              en: Los Angeles
+              es: Los Ángeles
+              fr: Los Angeles
+              ja: ロサンゼルス市
+              pt-BR: Los Angeles
+              ru: Лос-Анджелес
+              zh-CN: 洛杉矶
+          continent:
+            code: NA
+            geoname_id: 123456
+            names:
+              de: Nordamerika
+              en: North America
+              es: América del Norte
+              fr: Amérique du Nord
+              ja: 北アメリカ
+              pt-BR: América do Norte
+              ru: Северная Америка
+              zh-CN: 北美洲
+          country:
+            confidence: 75
+            geoname_id: 6252001
+            iso_code: US
+            names:
+              de: USA
+              en: United States
+              es: Estados Unidos
+              fr: États-Unis
+              ja: アメリカ合衆国
+              pt-BR: Estados Unidos
+              ru: США
+              zh-CN: 美国
+          location:
+            accuracy_radius: 20
+            average_income: 50321
+            latitude: 37.6293
+            local_time: '2015-04-26T01:37:17-08:00'
+            longitude: -122.1163
+            metro_code: 807
+            population_density: 7122
+            time_zone: America/Los_Angeles
+          postal:
+            code: '90001'
+            confidence: 10
+          registered_country:
+            geoname_id: 6252001
+            iso_code: US
+            names:
+              de: USA
+              en: United States
+              es: Estados Unidos
+              fr: États-Unis
+              ja: アメリカ合衆国
+              pt-BR: Estados Unidos
+              ru: США
+              zh-CN: 美国
+          represented_country:
+            geoname_id: 6252001
+            iso_code: US
+            names:
+              de: USA
+              en: United States
+              es: Estados Unidos
+              fr: États-Unis
+              ja: アメリカ合衆国
+              pt-BR: Estados Unidos
+              ru: США
+              zh-CN: 美国
+            type: military
+          risk_reasons:
+            - code: ANONYMOUS_IP
+              reason: The IP address belongs to an anonymous network.
+            - code: MINFRAUD_NETWORK_ACTIVITY
+              reason: Suspicious activity has been seen on this IP address across minFraud customers.
+          subdivisions:
+            - confidence: 50
+              geoname_id: 5332921
+              iso_code: CA
+              names:
+                de: Kalifornien
+                en: California
+                es: California
+                fr: Californie
+                ja: カリフォルニア
+                ru: Калифорния
+                zh-CN: 加州
+          traits:
+            autonomous_system_number: 1239
+            autonomous_system_organization: Linkem IR WiMax Network
+            connection_type: Cable/DSL
+            domain: example.com
+            ip_address: 1.2.3.4
+            ip_risk_snapshot: 45.5
+            is_anonymous: true
+            is_anonymous_vpn: true
+            is_anycast: true
+            is_hosting_provider: true
+            is_public_proxy: true
+            is_residential_proxy: true
+            is_tor_exit_node: true
+            isp: Linkem spa
+            mobile_country_code: '310'
+            mobile_network_code: '004'
+            network: 1.2.3.0/24
+            organization: Linkem IR WiMax Network
+            static_ip_score: 1.5
+            user_count: 1
+            user_type: traveler
+        queries_remaining: 5000
+        risk_score: 0.01
+        warnings:
+          - code: INPUT_INVALID
+            input_pointer: /shipping/city
+            warning: Encountered value at /shipping/city that does not meet the required constraints
+        billing_address:
+          distance_to_ip_location: 100
+          is_in_ip_country: true
+          is_postal_in_city: true
+          latitude: 37.545
+          longitude: -122.421
+        billing_phone:
+          country: US
+          is_voip: true
+          matches_postal: true
+          network_operator: Verizon/1
+          number_type: fixed
+        credit_card:
+          brand: Visa
+          country: US
+          is_business: true
+          is_issued_in_billing_address_country: true
+          is_prepaid: true
+          is_virtual: true
+          issuer:
+            matches_provided_name: true
+            matches_provided_phone_number: true
+            name: Bank of America
+            phone_number: 800-732-9194
+          type: credit
+        device:
+          confidence: 99
+          id: 7835b099-d385-4e5b-969e-7df26181d73b
+          last_seen: '2016-06-08T14:16:38Z'
+          local_time: '2018-01-02T10:40:11-08:00'
+        email:
+          domain:
+            classification: business
+            first_seen: '2015-01-20'
+            risk: 1.23
+            visit:
+              has_redirect: true
+              last_visited_on: '2025-11-15'
+              status: live
+            volume: 6.5
+          first_seen: '2016-02-03'
+          is_disposable: false
+          is_free: false
+          is_high_risk: true
+        shipping_address:
+          distance_to_billing_address: 22
+          distance_to_ip_location: 15
+          is_high_risk: true
+          is_in_ip_country: true
+          is_postal_in_city: true
+          latitude: 37.632
+          longitude: -122.313
+        shipping_phone:
+          country: CA
+          is_voip: true
+          matches_postal: true
+          network_operator: Telus Mobility-SVR/2
+          number_type: mobile
+    factors:
+      summary: minFraud Factors response
+      value:
+        disposition:
+          action: accept
+          reason: default
+          rule_label: my_custom_rule
+        funds_remaining: 25
+        id: 5bc5d6c2-b2c8-40af-87f4-6d61af86b6ae
+        ip_address:
+          risk: 0.01
+          anonymizer:
+            confidence: 99
+            is_anonymous: true
+            is_anonymous_vpn: true
+            is_hosting_provider: true
+            is_public_proxy: true
+            is_residential_proxy: true
+            is_tor_exit_node: true
+            network_last_seen: '2025-01-15'
+            provider_name: nordvpn
+            residential:
+              confidence: 82
+              network_last_seen: '2026-05-11'
+              provider_name: quickshift
+          city:
+            confidence: 25
+            geoname_id: 54321
+            names:
+              de: Los Angeles
+              en: Los Angeles
+              es: Los Ángeles
+              fr: Los Angeles
+              ja: ロサンゼルス市
+              pt-BR: Los Angeles
+              ru: Лос-Анджелес
+              zh-CN: 洛杉矶
+          continent:
+            code: NA
+            geoname_id: 123456
+            names:
+              de: Nordamerika
+              en: North America
+              es: América del Norte
+              fr: Amérique du Nord
+              ja: 北アメリカ
+              pt-BR: América do Norte
+              ru: Северная Америка
+              zh-CN: 北美洲
+          country:
+            confidence: 75
+            geoname_id: 6252001
+            iso_code: US
+            names:
+              de: USA
+              en: United States
+              es: Estados Unidos
+              fr: États-Unis
+              ja: アメリカ合衆国
+              pt-BR: Estados Unidos
+              ru: США
+              zh-CN: 美国
+          location:
+            accuracy_radius: 20
+            average_income: 50321
+            latitude: 37.6293
+            local_time: '2015-04-26T01:37:17-08:00'
+            longitude: -122.1163
+            metro_code: 807
+            population_density: 7122
+            time_zone: America/Los_Angeles
+          postal:
+            code: '90001'
+            confidence: 10
+          registered_country:
+            geoname_id: 6252001
+            iso_code: US
+            names:
+              de: USA
+              en: United States
+              es: Estados Unidos
+              fr: États-Unis
+              ja: アメリカ合衆国
+              pt-BR: Estados Unidos
+              ru: США
+              zh-CN: 美国
+          represented_country:
+            geoname_id: 6252001
+            iso_code: US
+            names:
+              de: USA
+              en: United States
+              es: Estados Unidos
+              fr: États-Unis
+              ja: アメリカ合衆国
+              pt-BR: Estados Unidos
+              ru: США
+              zh-CN: 美国
+            type: military
+          risk_reasons:
+            - code: ANONYMOUS_IP
+              reason: The IP address belongs to an anonymous network.
+            - code: MINFRAUD_NETWORK_ACTIVITY
+              reason: Suspicious activity has been seen on this IP address across minFraud customers.
+          subdivisions:
+            - confidence: 50
+              geoname_id: 5332921
+              iso_code: CA
+              names:
+                de: Kalifornien
+                en: California
+                es: California
+                fr: Californie
+                ja: カリフォルニア
+                ru: Калифорния
+                zh-CN: 加州
+          traits:
+            autonomous_system_number: 1239
+            autonomous_system_organization: Linkem IR WiMax Network
+            connection_type: Cable/DSL
+            domain: example.com
+            ip_address: 1.2.3.4
+            ip_risk_snapshot: 45.5
+            is_anonymous: true
+            is_anonymous_vpn: true
+            is_anycast: true
+            is_hosting_provider: true
+            is_public_proxy: true
+            is_residential_proxy: true
+            is_tor_exit_node: true
+            isp: Linkem spa
+            mobile_country_code: '310'
+            mobile_network_code: '004'
+            network: 1.2.3.0/24
+            organization: Linkem IR WiMax Network
+            static_ip_score: 1.5
+            user_count: 1
+            user_type: traveler
+        queries_remaining: 5000
+        risk_score: 0.01
+        warnings:
+          - code: INPUT_INVALID
+            input_pointer: /shipping/city
+            warning: Encountered value at /shipping/city that does not meet the required constraints
+        billing_address:
+          distance_to_ip_location: 100
+          is_in_ip_country: true
+          is_postal_in_city: true
+          latitude: 37.545
+          longitude: -122.421
+        billing_phone:
+          country: US
+          is_voip: true
+          matches_postal: true
+          network_operator: Verizon/1
+          number_type: fixed
+        credit_card:
+          brand: Visa
+          country: US
+          is_business: true
+          is_issued_in_billing_address_country: true
+          is_prepaid: true
+          is_virtual: true
+          issuer:
+            matches_provided_name: true
+            matches_provided_phone_number: true
+            name: Bank of America
+            phone_number: 800-732-9194
+          type: credit
+        device:
+          confidence: 99
+          id: 7835b099-d385-4e5b-969e-7df26181d73b
+          last_seen: '2016-06-08T14:16:38Z'
+          local_time: '2018-01-02T10:40:11-08:00'
+        email:
+          domain:
+            classification: business
+            first_seen: '2015-01-20'
+            risk: 1.23
+            visit:
+              has_redirect: true
+              last_visited_on: '2025-11-15'
+              status: live
+            volume: 6.5
+          first_seen: '2016-02-03'
+          is_disposable: false
+          is_free: false
+          is_high_risk: true
+        shipping_address:
+          distance_to_billing_address: 22
+          distance_to_ip_location: 15
+          is_high_risk: true
+          is_in_ip_country: true
+          is_postal_in_city: true
+          latitude: 37.632
+          longitude: -122.313
+        shipping_phone:
+          country: CA
+          is_voip: true
+          matches_postal: true
+          network_operator: Telus Mobility-SVR/2
+          number_type: mobile
+        risk_score_reasons:
+          - multiplier: 45
+            reasons:
+              - code: ANONYMOUS_IP
+                reason: The Anonymous IP address raised the overall risk score
+          - multiplier: 1.6
+            reasons:
+              - code: ORG_DISTANCE_RISK
+                reason: The risk of the ISP combined with the distance between the billing address and IP address location raised the overall risk score
+          - multiplier: 0.34
+            reasons:
+              - code: PHONE_ACTIVITY
+                reason: minFraud network activity of the phone number lowered the overall risk score
+    transaction-report:
+      summary: Transaction report request
+      value:
+        ip_address: 1.2.3.4
+        tag: suspected_fraud
+        transaction_id: '1'
+    report-bad-request:
+      summary: Report a Transaction TAG_REQUIRED response
+      value:
+        code: TAG_REQUIRED
+        error: Your request does not include a tag field.
+    disposition-updates:
+      summary: Disposition updates response
+      value:
+        last_update_timestamp: '2017-03-15T22:06:22.492945Z'
+        updates:
+          - minfraud_id: deadbeef-0000-0000-0000-000000000003
+            action: manual_review
+            action_last_updated: '2017-03-04T20:14:42.757200Z'
+            note: null
+            note_last_updated: '2017-03-05T16:52:31.995250Z'
+          - minfraud_id: deadbeef-0000-0000-0000-000000000002
+            action: reject
+            action_last_updated: '2017-03-14T21:39:57.854300Z'
+            note: null
+            note_last_updated: '2017-03-15T11:37:42.83235Z'
+          - minfraud_id: deadbeef-0000-0000-0000-000000000000
+            action: accept
+            action_last_updated: '2017-03-14T22:04:01.04425Z'
+            note: null
+            note_last_updated: null
+          - minfraud_id: deadbeef-0000-0000-0000-000000000020
+            action: manual_review
+            action_last_updated: '2017-03-15T22:04:11.044250Z'
+            note: Panda, can you check this out?
+            note_last_updated: '2017-03-15T22:04:25.828250Z'
+          - minfraud_id: deadbeef-0000-0000-0000-000000000030
+            action: accept
+            action_last_updated: '2017-03-15T22:05:42.954231Z'
+            note: Customer was traveling abroad.
+            note_last_updated: '2017-03-15T22:05:58.132423Z'
+          - minfraud_id: deadbeef-0000-0000-0000-000000000050
+            action: expired_review
+            action_last_updated: '2017-03-15T22:06:22.492945Z'
+            note: Customer didn't answer several phone calls.
+            note_last_updated: '2017-03-15T22:06:56.848123Z'
+    disposition-bad-request:
+      summary: Dispositions UPDATES_AFTER_REQUIRED response
+      value:
+        code: UPDATES_AFTER_REQUIRED
+        error: You have not supplied the updates_after URI parameter.
