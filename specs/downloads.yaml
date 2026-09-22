@@ -1,0 +1,446 @@
+openapi: 3.1.2
+info:
+  title: Database and geofeed report downloads
+  version: 0.1.0
+  summary:
+    Download GeoIP and GeoLite database files and GeoIP Exchange geofeed
+    reports.
+  description: >-
+    This API lets an authorized MaxMind account download GeoIP and GeoLite
+    database files, and download GeoIP Exchange geofeed reports. A successful
+    `GET` request, or a `HEAD` request for a geofeed report, redirects to a
+    signed URL for the file, so a client must follow redirects.
+
+
+    A geofeed error response with the `code` field has the `Content-Type` header
+    `application/vnd.maxmind.com-error+json; charset=UTF-8; version=2.0`.
+    Clients must handle any 4xx or 5xx status and check `Content-Type` before
+    they decode an error body.
+
+
+    MaxMind reserves the right to limit the number of downloads made within a
+    period of time. See [Download and update MaxMind
+    databases](https://support.maxmind.com/knowledge-base/articles/download-and-update-maxmind-databases).
+    MaxMind may also rate-limit an account that sends excessive unsuccessful
+    requests, for example requests with bad credentials or a lapsed
+    subscription.
+  contact:
+    name: MaxMind support
+    url: https://support.maxmind.com/
+  license:
+    name: Apache 2.0 or MIT
+    identifier: Apache-2.0 OR MIT
+  termsOfService: https://www.maxmind.com/en/terms-of-use
+externalDocs:
+  description: Updating GeoIP and GeoLite databases documentation
+  url: https://dev.maxmind.com/geoip/updating-databases/
+servers:
+  - url: https://download.maxmind.com
+    description: Database and geofeed report downloads
+security:
+  - basicAuth: []
+tags:
+  - name: Database downloads
+    description: Download GeoIP and GeoLite database files.
+  - name: Geofeed reports
+    description: Download GeoIP Exchange geofeed reports.
+paths:
+  /geoip/databases/{edition_id}/download:
+    parameters:
+      - $ref: "#/components/parameters/EditionID"
+      - $ref: "#/components/parameters/Suffix"
+      - $ref: "#/components/parameters/Date"
+      - $ref: "#/components/parameters/ArtifactType"
+    get:
+      operationId: downloadDatabase
+      summary: Download a database file
+      description: >-
+        Redirects to a signed URL for the database file. Each database download
+        counts against the account's download limit for a 24-hour period.
+      tags:
+        - Database downloads
+      externalDocs:
+        description: Updating GeoIP and GeoLite databases documentation
+        url: https://dev.maxmind.com/geoip/updating-databases/
+      responses:
+        "302":
+          description: >-
+            Redirects to a signed URL for the file. The response has no body.
+            The file name is
+            `<edition_id>_[<artifact_type>_]<YYYYMMDD>.<suffix>`.
+          headers:
+            Location:
+              description: >-
+                The signed URL for the file, on the host
+                `mm-prod-geoip-databases.a2649acb697e2c09b632799562c076f2.r2.cloudflarestorage.com`.
+                Firewalls and proxies must allow HTTPS connections to this host.
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/DownloadBadRequest"
+        "401":
+          $ref: "#/components/responses/DownloadUnauthorized"
+        "403":
+          $ref: "#/components/responses/DownloadForbidden"
+        "404":
+          $ref: "#/components/responses/DownloadNotFound"
+        "429":
+          $ref: "#/components/responses/DownloadTooManyRequests"
+        "451":
+          $ref: "#/components/responses/DownloadLegalReasons"
+        "500":
+          $ref: "#/components/responses/DownloadInternalServerError"
+        "503":
+          $ref: "#/components/responses/DownloadServiceUnavailable"
+    head:
+      operationId: checkDatabaseBuildDate
+      summary: Check a database file's build date
+      description: >-
+        Returns the headers for the database file without its body. Use this to
+        check the `Last-Modified` build date before downloading. A HEAD request
+        does not count against the account's download limit.
+      tags:
+        - Database downloads
+      externalDocs:
+        description: Updating GeoIP and GeoLite databases documentation
+        url: https://dev.maxmind.com/geoip/updating-databases/
+      responses:
+        "200":
+          description: The headers for the file. The response has no body.
+          headers:
+            Last-Modified:
+              description: The build date of the file.
+              schema:
+                type: string
+            Content-Disposition:
+              description: >-
+                `attachment`, with a `filename` of
+                `<edition_id>_[<artifact_type>_]<YYYYMMDD>.<suffix>`.
+              schema:
+                type: string
+            Content-Type:
+              description: The media type for the `suffix` requested.
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/DownloadBadRequest"
+        "401":
+          $ref: "#/components/responses/DownloadUnauthorized"
+        "403":
+          $ref: "#/components/responses/DownloadForbidden"
+        "404":
+          $ref: "#/components/responses/DownloadNotFound"
+        "429":
+          $ref: "#/components/responses/DownloadTooManyRequests"
+        "451":
+          $ref: "#/components/responses/DownloadLegalReasons"
+        "500":
+          $ref: "#/components/responses/DownloadInternalServerError"
+        "503":
+          $ref: "#/components/responses/DownloadServiceUnavailable"
+  /geofeed/reports/v1.0/{geofeed_id}/{report_id}:
+    parameters:
+      - $ref: "#/components/parameters/GeofeedID"
+      - $ref: "#/components/parameters/ReportID"
+    get:
+      operationId: downloadGeofeedReport
+      summary: Download a geofeed report
+      description: >-
+        Redirects to a signed URL for a GeoIP Exchange geofeed report.
+      tags:
+        - Geofeed reports
+      externalDocs:
+        description: GeoIP Exchange documentation
+        url: https://dev.maxmind.com/geoip/geoip-exchange/
+      responses:
+        "307":
+          description: >-
+            Redirects to a signed URL for the report. The file is
+            `<report_id>.csv`.
+          headers:
+            Location:
+              description: >-
+                The signed URL for the report, on the host
+                `storage.googleapis.com`.
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/GeofeedBadRequest"
+        "401":
+          $ref: "#/components/responses/GeofeedUnauthorized"
+        "403":
+          $ref: "#/components/responses/GeofeedForbidden"
+        "404":
+          $ref: "#/components/responses/GeofeedNotFound"
+        "500":
+          $ref: "#/components/responses/GeofeedInternalServerError"
+        "503":
+          $ref: "#/components/responses/GeofeedServiceUnavailable"
+    head:
+      operationId: checkGeofeedReportBuildDate
+      summary: Check a geofeed report's build date
+      description: >-
+        Redirects to a signed URL for a GeoIP Exchange geofeed report, the same
+        as `GET`, but without a response body. Follow the redirect with HEAD.
+        The storage host's response has the `Last-Modified` build date, not this
+        307 response.
+      tags:
+        - Geofeed reports
+      externalDocs:
+        description: GeoIP Exchange documentation
+        url: https://dev.maxmind.com/geoip/geoip-exchange/
+      responses:
+        "307":
+          description: >-
+            Redirects to a signed URL for the report. The response has no body.
+            The file is `<report_id>.csv`.
+          headers:
+            Location:
+              description: >-
+                The signed URL for the report, on the host
+                `storage.googleapis.com`.
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/GeofeedBadRequest"
+        "401":
+          $ref: "#/components/responses/GeofeedUnauthorized"
+        "403":
+          $ref: "#/components/responses/GeofeedForbidden"
+        "404":
+          $ref: "#/components/responses/GeofeedNotFound"
+        "500":
+          $ref: "#/components/responses/GeofeedInternalServerError"
+        "503":
+          $ref: "#/components/responses/GeofeedServiceUnavailable"
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: >-
+        The username is your MaxMind account ID. The password is your MaxMind
+        license key. The service accepts HTTPS requests only.
+  parameters:
+    EditionID:
+      name: edition_id
+      in: path
+      required: true
+      description: >-
+        The edition ID of the database. Edition IDs are case sensitive. An ID
+        with the wrong case returns 404.
+      schema:
+        type: string
+        pattern: "^[A-Za-z0-9_-]+$"
+      examples:
+        city:
+          value: GeoIP2-City
+        cityCSV:
+          value: GeoIP2-City-CSV
+    Suffix:
+      name: suffix
+      in: query
+      required: true
+      description: >-
+        The file format to download. Binary editions use `tar.gz` and CSV
+        editions use `zip`. `csv` with `artifact_type` downloads a report for
+        either the binary or the CSV edition, for example the [location name
+        diff
+        report](https://dev.maxmind.com/geoip/track-location-name-updates/).
+        `tar.gz.md5`, `tar.gz.sha256`, `zip.md5`, and `zip.sha256` download a
+        checksum file for the matching archive instead of the archive itself.
+      schema:
+        type: string
+        enum:
+          - tar.gz
+          - zip
+          - csv
+          - tar.gz.md5
+          - tar.gz.sha256
+          - zip.md5
+          - zip.sha256
+      examples:
+        tarGz:
+          value: tar.gz
+        zip:
+          value: zip
+        csv:
+          value: csv
+    Date:
+      name: date
+      in: query
+      required: false
+      description: >-
+        Restricts the download to the release built on this date, in `YYYYMMDD`
+        format. If not present, MaxMind returns the latest release.
+      schema:
+        type: string
+        pattern: "^[0-9]{8}$"
+      examples:
+        date:
+          value: "20200121"
+    ArtifactType:
+      name: artifact_type
+      in: query
+      required: false
+      description: >-
+        The kind of artifact to download instead of the database file itself.
+        Known value: `Locations-Diff-Report`, paired with `suffix=csv`, for the
+        [location name diff
+        report](https://dev.maxmind.com/geoip/track-location-name-updates/).
+        MaxMind may add other values.
+      schema:
+        type: string
+      examples:
+        locationsDiffReport:
+          value: Locations-Diff-Report
+    GeofeedID:
+      name: geofeed_id
+      in: path
+      required: true
+      description: >-
+        The numeric ID for the geofeed, from the GeoIP Exchange section of your
+        account portal.
+      schema:
+        type: integer
+        minimum: 1
+      examples:
+        geofeedID:
+          value: 12345
+    ReportID:
+      name: report_id
+      in: path
+      required: true
+      description: The kind of geofeed report to download.
+      schema:
+        type: string
+        enum:
+          - free
+          - geolocation
+          - intelligence
+      examples:
+        geolocation:
+          value: geolocation
+  responses:
+    DownloadBadRequest:
+      description: >-
+        The request is not valid. The response does not have a JSON body, for
+        example `Invalid edition ID`, `Invalid suffix`, `Invalid date`,
+        `"<value>" is an invalid date`, or `"<value>" is an invalid artifact
+        type`.
+    DownloadUnauthorized:
+      description: >-
+        The credentials are missing or not valid. The response does not have a
+        JSON body, for example `An account ID and license key are required to
+        use this service.` or `Your account ID or license key could not be
+        authenticated.`
+      headers:
+        WWW-Authenticate:
+          description:
+            The authentication scheme, `Basic realm="geoip-download"`.
+          schema:
+            type: string
+    DownloadForbidden:
+      description: >-
+        The account cannot use this download service, or has no active
+        subscription for this database edition (free editions need no
+        subscription). The response does not have a JSON body, for example `You
+        do not have permission to use this service interface.` or `Invalid
+        product ID or subscription expired for <edition_id>`.
+    DownloadNotFound:
+      description: >-
+        No file matches the edition ID, date, and suffix, or the path does not
+        match a download URL. The response does not have a JSON body, for
+        example `Database edition "<edition_id>" not found`.
+    DownloadTooManyRequests:
+      description: >-
+        The account reached its download limit for a 24-hour period. The
+        response does not have a JSON body.
+    DownloadLegalReasons:
+      description: >-
+        MaxMind cannot provide this download for legal reasons. The response
+        does not have a JSON body, for example `Downloads are forbidden from
+        countries and territories on the US embargo list` or `Downloads of this
+        database from <country> are forbidden due to US bulk sensitive data
+        transfer rules`.
+    DownloadInternalServerError:
+      description: >-
+        The service had an unexpected error. The response does not have a JSON
+        body.
+    DownloadServiceUnavailable:
+      description: >-
+        The service has a temporary problem. Send the request again later. The
+        response does not have a JSON body, for example `Unable to reach the
+        GeoIP download service. Please try again later.`
+    GeofeedBadRequest:
+      description: >-
+        The geofeed ID in the path is not a valid integer
+        (`GEOFEED_ID_INVALID`).
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: GEOFEED_ID_INVALID
+            error: "'abc' is not a valid geofeed_id."
+    GeofeedForbidden:
+      description: >-
+        The account does not have permission to download this kind of report
+        (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also
+        gets this status, but without a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: PERMISSION_REQUIRED
+            error: You do not have permission to use the service.
+    GeofeedUnauthorized:
+      description: >-
+        The credentials are missing or not valid. The `code` is one of:
+
+        - `AUTHORIZATION_INVALID`: the account ID or license key is not valid.
+
+        - `ACCOUNT_ID_REQUIRED`: the Basic credentials have no account ID.
+
+        - `LICENSE_KEY_REQUIRED`: the Basic credentials have no license key.
+      headers:
+        WWW-Authenticate:
+          description:
+            The authentication scheme, `Basic realm="geofeed-report"`.
+          schema:
+            type: string
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: ACCOUNT_ID_REQUIRED
+            error:
+              An account ID and license key are required to use this service.
+    GeofeedNotFound:
+      description: >-
+        No report matches the geofeed ID and report kind, or the geofeed belongs
+        to a different account (`REPORT_NOT_FOUND`). Some 404 responses do not
+        have a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: REPORT_NOT_FOUND
+            error: Report not found with the given date.
+    GeofeedInternalServerError:
+      description: >-
+        The service had an unexpected error (`SERVER_ERROR`).
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: SERVER_ERROR
+            error: There was an error when processing this request.
+    GeofeedServiceUnavailable:
+      description: >-
+        The service has a temporary problem. Send the request again later. The
+        response does not have a JSON body.

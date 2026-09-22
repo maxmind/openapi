@@ -1,0 +1,188 @@
+openapi: 3.1.2
+info:
+  title: Privacy Exclusions API
+  version: 0.1.0
+  summary: Retrieve Do Not Sell My Personal Information exclusion requests.
+  description: |-
+    The Privacy Exclusions API returns the networks that MaxMind excludes from its services under Do Not Sell My Personal Information requests, such as those made under the California Consumer Privacy Act (CCPA).
+
+    A successful response has the `Content-Type` header `application/vnd.maxmind.com-privacy-exclusions+json; charset=UTF-8; version=1.0`. An error response has `application/vnd.maxmind.com-error+json; charset=UTF-8; version=2.0`.
+
+    Clients must handle any 4xx or 5xx status and check `Content-Type` before they decode an error body.
+  contact:
+    name: MaxMind support
+    url: https://support.maxmind.com/
+  license:
+    name: Apache 2.0 or MIT
+    identifier: Apache-2.0 OR MIT
+  termsOfService: https://www.maxmind.com/en/terms-of-use
+servers:
+  - url: https://api.maxmind.com
+    description: MaxMind web services
+security:
+  - basicAuth: []
+tags:
+  - name: Privacy exclusions
+    description: Privacy exclusion requests.
+externalDocs:
+  description: Privacy Exclusions API documentation
+  url: https://dev.maxmind.com/geoip/privacy-exclusions-api/
+paths:
+  /privacy/exclusions:
+    get:
+      operationId: getPrivacyExclusions
+      summary: List privacy exclusions
+      description: Returns the current Do Not Sell My Personal Information exclusions. Each exclusion is a network that MaxMind excludes from its services. The response always includes a `Content-Length` header.
+      tags:
+        - Privacy exclusions
+      externalDocs:
+        description: Privacy Exclusions API documentation
+        url: https://dev.maxmind.com/geoip/privacy-exclusions-api/
+      parameters:
+        - $ref: '#/components/parameters/UpdatesAfter'
+      responses:
+        '200':
+          description: The current privacy exclusions.
+          content:
+            application/vnd.maxmind.com-privacy-exclusions+json:
+              schema:
+                $ref: '#/components/schemas/ExclusionsResponse'
+              examples:
+                exclusions:
+                  $ref: '#/components/examples/exclusions'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: The username is your MaxMind account ID. The password is your MaxMind license key. The service accepts HTTPS requests only, with TLS 1.2 or higher. The authorization realm is `privacy-exclusion`.
+  parameters:
+    UpdatesAfter:
+      name: updates_after
+      in: query
+      required: false
+      description: If present, the response includes only exclusions updated after this time. The value is an RFC 3339 timestamp. URL-encode the value, for example send a `+` in the UTC offset as `%2B`.
+      schema:
+        type: string
+        format: date-time
+      examples:
+        updatesAfter:
+          value: '2020-04-12T23:20:50.52Z'
+  schemas:
+    Exclusion:
+      type: object
+      description: A single privacy exclusion request. MaxMind can add keys in the future.
+      required:
+        - exclusion_type
+        - data_type
+        - value
+        - last_updated
+      properties:
+        exclusion_type:
+          type: string
+          description: The governing law or rule for the exclusion. Currently the only value is `ccpa_do_not_sell`, for a request made under the California Consumer Privacy Act.
+        data_type:
+          type: string
+          description: 'The type of the `value` field. Known value: `network`, an IP network in CIDR notation. All IP addresses in the network are excluded. Check this field before you use the associated `value`. MaxMind may add other values.'
+        value:
+          type: string
+          description: The excluded value, in the format the `data_type` field gives.
+        last_updated:
+          type: string
+          format: date-time
+          description: The RFC 3339 timestamp of the last update to the exclusion.
+    ExclusionsResponse:
+      type: object
+      description: The Privacy Exclusions response. MaxMind can add keys in the future.
+      required:
+        - exclusions
+      properties:
+        exclusions:
+          type: array
+          description: The current privacy exclusions. Empty if there are none.
+          items:
+            $ref: '#/components/schemas/Exclusion'
+    Error:
+      type: object
+      description: Not all error responses have a JSON body. Check the `Content-Type` header before you decode the body as JSON.
+      required:
+        - code
+        - error
+      properties:
+        code:
+          type: string
+          description: A static error code for machine use. The meaning of a code never changes, but MaxMind can add or remove codes.
+          examples:
+            - IP_ADDRESS_INVALID
+        error:
+          type: string
+          description: A human-readable description of the error. The text can change at any time.
+          examples:
+            - The value '1.2.3' is not a valid IP address.
+  responses:
+    BadRequest:
+      description: The request is not valid (`TIMESTAMP_INVALID`). The `updates_after` value is not a valid RFC 3339 timestamp.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: TIMESTAMP_INVALID
+            error: The updates_after field must be in RFC 3339 format.
+    Unauthorized:
+      description: |-
+        The credentials are missing or not valid. The `code` is one of:
+        - `AUTHORIZATION_INVALID`: the account ID or license key is not valid.
+        - `ACCOUNT_ID_REQUIRED`: the Basic credentials have no account ID.
+        - `LICENSE_KEY_REQUIRED`: the Basic credentials have no license key.
+      headers:
+        WWW-Authenticate:
+          description: The authentication scheme, `Basic realm="privacy-exclusion"`.
+          schema:
+            type: string
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: ACCOUNT_ID_REQUIRED
+            error: An account ID and license key are required to use this service.
+    Forbidden:
+      description: The account does not have permission to use this service (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also gets this status, but without a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: PERMISSION_REQUIRED
+            error: You do not have permission to use the service.
+    InternalServerError:
+      description: The service had an unexpected error (`SERVER_ERROR`).
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: SERVER_ERROR
+            error: There was an error when processing this request.
+    ServiceUnavailable:
+      description: The service has a temporary problem. Check https://status.maxmind.com, or send the request again later. The response does not have a JSON body.
+  examples:
+    exclusions:
+      summary: Privacy exclusions response
+      value:
+        exclusions:
+          - exclusion_type: ccpa_do_not_sell
+            data_type: network
+            value: 10.0.26.166/32
+            last_updated: '2020-01-08T18:58:38Z'
