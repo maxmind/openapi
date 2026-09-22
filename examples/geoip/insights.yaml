@@ -1,0 +1,125 @@
+summary: GeoIP Insights response
+value:
+  continent:
+    code: NA
+    geoname_id: 123456
+    names:
+      de: Nordamerika
+      en: North America
+      es: América del Norte
+      fr: Amérique du Nord
+      ja: 北アメリカ
+      pt-BR: América do Norte
+      ru: Северная Америка
+      zh-CN: 北美洲
+  country:
+    geoname_id: 6252001
+    iso_code: US
+    names:
+      de: USA
+      en: United States
+      es: Estados Unidos
+      fr: États-Unis
+      ja: アメリカ合衆国
+      pt-BR: Estados Unidos
+      ru: США
+      zh-CN: 美国
+    confidence: 75
+  maxmind:
+    queries_remaining: 54321
+  registered_country:
+    geoname_id: 6252001
+    iso_code: US
+    names:
+      de: USA
+      en: United States
+      es: Estados Unidos
+      fr: États-Unis
+      ja: アメリカ合衆国
+      pt-BR: Estados Unidos
+      ru: США
+      zh-CN: 美国
+  represented_country:
+    geoname_id: 6252001
+    iso_code: US
+    names:
+      de: USA
+      en: United States
+      es: Estados Unidos
+      fr: États-Unis
+      ja: アメリカ合衆国
+      pt-BR: Estados Unidos
+      ru: США
+      zh-CN: 美国
+    type: military
+  anonymizer:
+    confidence: 99
+    is_anonymous: true
+    is_anonymous_vpn: true
+    is_hosting_provider: true
+    is_public_proxy: true
+    is_residential_proxy: true
+    is_tor_exit_node: true
+    network_last_seen: "2025-01-15"
+    provider_name: nordvpn
+    residential:
+      confidence: 82
+      network_last_seen: "2026-05-11"
+      provider_name: quickshift
+  traits:
+    ip_address: 1.2.3.4
+    ip_risk_snapshot: 45.5
+    is_anycast: true
+    network: 1.2.3.0/24
+    autonomous_system_number: 1239
+    autonomous_system_organization: Linkem IR WiMax Network
+    connection_type: Cable/DSL
+    domain: example.com
+    isp: Linkem spa
+    mobile_country_code: "310"
+    mobile_network_code: "004"
+    organization: Linkem IR WiMax Network
+    is_anonymous: true
+    is_anonymous_vpn: true
+    is_hosting_provider: true
+    is_public_proxy: true
+    is_residential_proxy: true
+    is_tor_exit_node: true
+    static_ip_score: 1.5
+    user_count: 1
+    user_type: traveler
+  city:
+    confidence: 25
+    geoname_id: 54321
+    names:
+      de: Los Angeles
+      en: Los Angeles
+      es: Los Ángeles
+      fr: Los Angeles
+      ja: ロサンゼルス市
+      pt-BR: Los Angeles
+      ru: Лос-Анджелес
+      zh-CN: 洛杉矶
+  location:
+    accuracy_radius: 20
+    latitude: 37.6293
+    longitude: -122.1163
+    metro_code: 807
+    time_zone: America/Los_Angeles
+    average_income: 128321
+    population_density: 1234
+  postal:
+    code: "90001"
+    confidence: 10
+  subdivisions:
+    - geoname_id: 5332921
+      iso_code: CA
+      names:
+        de: Kalifornien
+        en: California
+        es: California
+        fr: Californie
+        ja: カリフォルニア
+        ru: Калифорния
+        zh-CN: 加州
+      confidence: 50

@@ -1,0 +1,315 @@
+openapi: 3.1.2
+info:
+  title: GeoIP and GeoLite web services
+  version: 0.1.0
+  summary: IP geolocation and network data for an IPv4 or IPv6 address.
+  description: >-
+    The GeoIP web services return geolocation and network data for an IP
+    address. GeoIP Country, GeoIP City Plus, and GeoIP Insights are available on
+    `geoip.maxmind.com`. GeoLite Country and GeoLite City are available on
+    `geolite.info`.
+
+
+    If a key maps to an undefined or empty value, the response leaves out the
+    key. This applies to top-level keys and to the keys of nested objects.
+
+
+    MaxMind can add keys to a response without a version change. Clients must
+    ignore keys that they do not know.
+
+
+    A successful response has a `Content-Type` of
+    `application/vnd.maxmind.com-<service>+json; charset=UTF-8; version=2.1`,
+    for example `application/vnd.maxmind.com-city+json; charset=UTF-8;
+    version=2.1`. An error response has a `Content-Type` of
+    `application/vnd.maxmind.com-error+json; charset=UTF-8; version=2.1`.
+
+
+    MaxMind can add new values to an enumerated field, other than the fixed
+    continent codes, and new locale codes. MaxMind can also add or remove error
+    codes. Clients must handle any 4xx or 5xx status and check `Content-Type`
+    before they decode an error body.
+  contact:
+    name: MaxMind support
+    url: https://support.maxmind.com/
+  license:
+    name: Apache 2.0 or MIT
+    identifier: Apache-2.0 OR MIT
+  termsOfService: https://www.maxmind.com/en/terms-of-use
+externalDocs:
+  description: GeoIP web services documentation
+  url: https://dev.maxmind.com/geoip/docs/web-services/
+servers:
+  - url: https://geoip.maxmind.com/geoip/v2.1
+    description: GeoIP web services
+  - url: https://geolite.info/geoip/v2.1
+    description: GeoLite web services (Country and City only)
+  - url: https://sandbox.maxmind.com/geoip/v2.1
+    description: >-
+      GeoIP sandbox. Use a license key from a Sandbox account. The sandbox
+      returns fixed test data for a small set of IP addresses. Other addresses
+      return `IP_ADDRESS_NOT_FOUND`.
+security:
+  - basicAuth: []
+tags:
+  - name: GeoIP
+    description: IP geolocation lookups.
+paths:
+  /country/{ip_address}:
+    get:
+      operationId: getCountry
+      summary: Look up country data
+      description: >-
+        Returns GeoIP Country data for the IP address. On `geolite.info`, this
+        returns GeoLite Country data.
+      tags:
+        - GeoIP
+      parameters:
+        - $ref: "#/components/parameters/IPAddress"
+        - $ref: "#/components/parameters/Pretty"
+      responses:
+        "200":
+          description: The Country record for the IP address.
+          content:
+            application/vnd.maxmind.com-country+json:
+              schema:
+                $ref: "../components/geoip-records.yaml#/schemas/CountryResponse"
+              examples:
+                country:
+                  $ref: "../examples/geoip/country.yaml"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /city/{ip_address}:
+    get:
+      operationId: getCity
+      summary: Look up city data
+      description: >-
+        Returns GeoIP City Plus data for the IP address. On `geolite.info`, this
+        returns GeoLite City data.
+      tags:
+        - GeoIP
+      parameters:
+        - $ref: "#/components/parameters/IPAddress"
+        - $ref: "#/components/parameters/Pretty"
+      responses:
+        "200":
+          description: The City record for the IP address.
+          content:
+            application/vnd.maxmind.com-city+json:
+              schema:
+                $ref: "../components/geoip-records.yaml#/schemas/CityResponse"
+              examples:
+                city:
+                  $ref: "../examples/geoip/city.yaml"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /insights/{ip_address}:
+    servers:
+      - url: https://geoip.maxmind.com/geoip/v2.1
+        description: GeoIP web services
+      - url: https://sandbox.maxmind.com/geoip/v2.1
+        description: >-
+          GeoIP sandbox. Use a license key from a Sandbox account. The sandbox
+          returns fixed test data for a small set of IP addresses. Other
+          addresses return `IP_ADDRESS_NOT_FOUND`.
+    get:
+      operationId: getInsights
+      summary: Look up insights data
+      description: >-
+        Returns GeoIP Insights data for the IP address. GeoLite does not offer
+        this service.
+      tags:
+        - GeoIP
+      parameters:
+        - $ref: "#/components/parameters/IPAddress"
+        - $ref: "#/components/parameters/Pretty"
+      responses:
+        "200":
+          description: The Insights record for the IP address.
+          content:
+            application/vnd.maxmind.com-insights+json:
+              schema:
+                $ref: "../components/geoip-records.yaml#/schemas/InsightsResponse"
+              examples:
+                insights:
+                  $ref: "../examples/geoip/insights.yaml"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: >-
+        The username is your MaxMind account ID. The password is your MaxMind
+        license key. The service accepts HTTPS requests only, with TLS 1.2 or
+        higher.
+  parameters:
+    IPAddress:
+      name: ip_address
+      in: path
+      required: true
+      description: >-
+        The IPv4 or IPv6 address to look up. Use the lowercase string `me` to
+        look up the IP address that sends the request. For IPv6, the canonical
+        form in RFC 5952 is recommended, but any valid form without a zone ID is
+        accepted.
+      schema:
+        type: string
+      examples:
+        ipv4:
+          value: 1.2.3.4
+        ipv6:
+          value: 2001:db8::1:0:0:1
+        me:
+          value: me
+    Pretty:
+      name: pretty
+      in: query
+      required: false
+      description: >-
+        If present, the response body is indented for reading, for example
+        `?pretty`.
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: >-
+        The request is not valid. The `code` is one of:
+
+        - `IP_ADDRESS_REQUIRED`: the request has an empty IP address.
+
+        - `IP_ADDRESS_INVALID`: the IP address is not a valid IPv4 or IPv6
+        address.
+
+        - `IP_ADDRESS_RESERVED`: the IP address is in a reserved or private
+        range.
+
+        - `SERVICE_INVALID`: the service is not available on this host. On
+        `geolite.info`, only Country and City are available.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: IP_ADDRESS_RESERVED
+            error:
+              You have supplied an IP address which belongs to a reserved or
+              private range.
+    Unauthorized:
+      description: >-
+        The credentials are missing or not valid. The `code` is one of:
+
+        - `AUTHORIZATION_INVALID`: the account ID or license key is not valid.
+
+        - `ACCOUNT_ID_REQUIRED`: the Basic credentials have no account ID.
+
+        - `LICENSE_KEY_REQUIRED`: the Basic credentials have no license key.
+      headers:
+        WWW-Authenticate:
+          description: The authentication scheme, `Basic realm="geoip2"`.
+          schema:
+            type: string
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: AUTHORIZATION_INVALID
+            error: Your account ID or license key could not be authenticated.
+    PaymentRequired:
+      description: >-
+        The account has no funds for this service (`INSUFFICIENT_FUNDS`). For
+        GeoLite, `INSUFFICIENT_FUNDS` means the account used its daily query
+        limit.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: INSUFFICIENT_FUNDS
+            error: You do not have sufficient funds to use this service.
+    Forbidden:
+      description: >-
+        The account does not have permission to use this service
+        (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also
+        gets this status, but without a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: PERMISSION_REQUIRED
+            error: You do not have permission to use the service.
+    NotFound:
+      description: >-
+        The IP address is not in the database (`IP_ADDRESS_NOT_FOUND`). Some 404
+        responses do not have a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: IP_ADDRESS_NOT_FOUND
+            error: The IP address '1.2.3.4' is not in our database.
+    TooManyRequests:
+      description: >-
+        MaxMind rate-limited the request, usually because of too many earlier
+        error responses. The response may have no body.
+    InternalServerError:
+      description: >-
+        The service had an unexpected error (`SERVER_ERROR`). The response may
+        have no body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: SERVER_ERROR
+            error: There was an error when processing this request.
+    ServiceUnavailable:
+      description: >-
+        The service has a temporary problem. Send the request again later. The
+        response does not have a JSON body.

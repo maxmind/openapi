@@ -1,0 +1,17 @@
+extends:
+  - recommended-strict
+
+rules:
+  # MaxMind APIs are served from fixed public hosts.
+  no-server-example.com: error
+  operation-4xx-response: error
+  # Response schemas allow unknown keys for forward compatibility, but every
+  # key in an example must still be declared.
+  no-invalid-media-type-examples:
+    severity: error
+    allowAdditionalProperties: false
+
+apis:
+  geoip:
+    root: specs/geoip.yaml
+    output: bundled/geoip.yaml
