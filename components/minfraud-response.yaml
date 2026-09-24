@@ -652,12 +652,11 @@ schemas:
         format: date-time
         description: >-
           The sort timestamp of the last transaction in `updates`, in RFC 3339
-          format with microsecond precision. This can differ from that
-          transaction's `action_last_updated` and `note_last_updated`. Pass this
-          value as `updates_after` in your next request. An empty `updates`
-          array means there are no updates after `updates_after` yet. This value
-          is then not a transaction's timestamp, so keep your current
-          `updates_after` for the next request.
+          format. This can differ from that transaction's `action_last_updated`
+          and `note_last_updated`. Pass this value as `updates_after` in your
+          next request. An empty `updates` array means there are no updates
+          after `updates_after` yet. This value is then not a transaction's
+          timestamp, so keep your current `updates_after` for the next request.
       updates:
         type: array
         description: >-
