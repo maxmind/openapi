@@ -56,6 +56,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
         '503':
@@ -166,6 +168,8 @@ components:
           example:
             code: PERMISSION_REQUIRED
             error: You do not have permission to use the service.
+    TooManyRequests:
+      description: MaxMind rate-limited the request, usually because of excessive earlier error responses. The response may not include a JSON body.
     InternalServerError:
       description: The service had an unexpected error (`SERVER_ERROR`).
       content:
