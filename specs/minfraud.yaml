@@ -427,7 +427,7 @@ webhooks:
             format: date-time
       responses:
         "2XX":
-          description: Return a 2xx status to acknowledge the alert.
+          description: The receiving endpoint returned a successful HTTP status.
 components:
   securitySchemes:
     basicAuth:
