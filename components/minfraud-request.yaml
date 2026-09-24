@@ -65,7 +65,9 @@ schemas:
         description: The HTTP `Accept-Language` header of the device.
       ip_address:
         type: string
-        maxLength: 255
+        anyOf:
+          - format: ipv4
+          - format: ipv6
         description: >-
           The IPv4 or IPv6 address of the device, in presentation format
           (dotted-quad notation or IPv6 colon notation). A private or reserved
