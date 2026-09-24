@@ -135,6 +135,8 @@ paths:
           $ref: '#/components/responses/GeofeedForbidden'
         '404':
           $ref: '#/components/responses/GeofeedNotFound'
+        '429':
+          $ref: '#/components/responses/GeofeedTooManyRequests'
         '500':
           $ref: '#/components/responses/GeofeedInternalServerError'
         '503':
@@ -164,6 +166,8 @@ paths:
           $ref: '#/components/responses/GeofeedForbidden'
         '404':
           $ref: '#/components/responses/GeofeedNotFound'
+        '429':
+          $ref: '#/components/responses/GeofeedTooManyRequests'
         '500':
           $ref: '#/components/responses/GeofeedInternalServerError'
         '503':
@@ -323,6 +327,8 @@ components:
           example:
             code: REPORT_NOT_FOUND
             error: Report not found with the given date.
+    GeofeedTooManyRequests:
+      description: MaxMind rate-limited the request, usually because of excessive earlier error responses. The response may not include a JSON body.
     GeofeedInternalServerError:
       description: The service had an unexpected error (`SERVER_ERROR`).
       content:
