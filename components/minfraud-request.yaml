@@ -115,9 +115,9 @@ schemas:
         format: date-time
         description: >-
           The time the event occurred, in RFC 3339 format. If you omit this
-          field, MaxMind uses the time it receives the request. Do not send this
-          field for a live transaction. Use it only for a stored transaction
-          that you score later.
+          field, MaxMind uses the time it receives the request. MaxMind does not
+          recommend this field for live transactions. It can be useful for
+          stored transactions that you score later.
 
 
           The time must be within the past year. For an older time, MaxMind uses
