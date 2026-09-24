@@ -111,8 +111,7 @@ components:
         The account that owns the license key does not have permission to use
         this service (`PERMISSION_REQUIRED`). This response means that MaxMind
         recognizes the key. An unknown key gets a 401 response instead. A
-        request that uses HTTP instead of HTTPS also gets this status, but
-        without a JSON body.
+        request that uses HTTP instead of HTTPS also gets this status.
       content:
         application/json:
           schema:

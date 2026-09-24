@@ -160,7 +160,7 @@ components:
             code: ACCOUNT_ID_REQUIRED
             error: An account ID and license key are required to use this service.
     Forbidden:
-      description: The account does not have permission to use this service (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also gets this status, but without a JSON body.
+      description: The account does not have permission to use this service (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also gets this status.
       content:
         application/vnd.maxmind.com-error+json:
           schema:

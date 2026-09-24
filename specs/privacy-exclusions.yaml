@@ -182,7 +182,7 @@ components:
       description: >-
         The account does not have permission to use this service
         (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also
-        gets this status, but without a JSON body.
+        gets this status.
       content:
         application/vnd.maxmind.com-error+json:
           schema:

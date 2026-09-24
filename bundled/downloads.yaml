@@ -292,7 +292,7 @@ components:
             code: GEOFEED_ID_INVALID
             error: '''abc'' is not a valid geofeed_id.'
     GeofeedForbidden:
-      description: The account does not have permission to download this kind of report (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also gets this status, but without a JSON body.
+      description: The account does not have permission to download this kind of report (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also gets this status.
       content:
         application/vnd.maxmind.com-error+json:
           schema:
