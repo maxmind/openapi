@@ -1844,7 +1844,11 @@ components:
     DispositionUpdate:
       type: object
       required:
+        - action
+        - action_last_updated
         - minfraud_id
+        - note
+        - note_last_updated
       properties:
         action:
           type:
