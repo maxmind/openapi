@@ -225,9 +225,6 @@ components:
 
         - `IP_ADDRESS_RESERVED`: the IP address is in a reserved or private
         range.
-
-        - `SERVICE_INVALID`: the service is not available on this host. On
-        `geolite.info`, only Country and City are available.
       content:
         application/vnd.maxmind.com-error+json:
           schema:

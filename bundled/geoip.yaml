@@ -184,7 +184,6 @@ components:
         - `IP_ADDRESS_REQUIRED`: the request has an empty IP address.
         - `IP_ADDRESS_INVALID`: the IP address is not a valid IPv4 or IPv6 address.
         - `IP_ADDRESS_RESERVED`: the IP address is in a reserved or private range.
-        - `SERVICE_INVALID`: the service is not available on this host. On `geolite.info`, only Country and City are available.
       content:
         application/vnd.maxmind.com-error+json:
           schema:
