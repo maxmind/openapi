@@ -354,8 +354,9 @@ components:
         example `Database edition "<edition_id>" not found`.
     DownloadTooManyRequests:
       description: >-
-        The account reached its download limit for a 24-hour period. The
-        response does not have a JSON body.
+        The account reached its download limit for a 24-hour period, or MaxMind
+        rate-limited the request, for example after excessive error responses.
+        The response may not include a JSON body.
     DownloadLegalReasons:
       description: >-
         MaxMind cannot provide this download for legal reasons. The response

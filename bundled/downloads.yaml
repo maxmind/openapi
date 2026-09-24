@@ -275,7 +275,7 @@ components:
     DownloadNotFound:
       description: No file matches the edition ID, date, and suffix, or the path does not match a download URL. The response does not have a JSON body, for example `Database edition "<edition_id>" not found`.
     DownloadTooManyRequests:
-      description: The account reached its download limit for a 24-hour period. The response does not have a JSON body.
+      description: The account reached its download limit for a 24-hour period, or MaxMind rate-limited the request, for example after excessive error responses. The response may not include a JSON body.
     DownloadLegalReasons:
       description: MaxMind cannot provide this download for legal reasons. The response does not have a JSON body, for example `Downloads are forbidden from countries and territories on the US embargo list` or `Downloads of this database from <country> are forbidden due to US bulk sensitive data transfer rules`.
     DownloadInternalServerError:
