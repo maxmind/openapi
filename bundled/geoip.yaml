@@ -199,7 +199,7 @@ components:
         - `LICENSE_KEY_REQUIRED`: the Basic credentials have no license key.
       headers:
         WWW-Authenticate:
-          description: The authentication scheme, `Basic realm="geoip2"`.
+          description: HTTP Basic authentication.
           schema:
             type: string
       content:
