@@ -578,7 +578,8 @@ components:
         a JSON body.
     ReportPayloadTooLarge:
       description: >-
-        The request body is too large. The response does not have a JSON body.
+        The request body is larger than 65,536 bytes. The response does not have
+        a JSON body.
     TooManyRequests:
       description: >-
         MaxMind rate-limited the request, usually because of too many earlier
