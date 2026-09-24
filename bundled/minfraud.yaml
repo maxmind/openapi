@@ -1881,7 +1881,7 @@ components:
           description: The sort timestamp of the last transaction in `updates`, in RFC 3339 format with microsecond precision. This can differ from that transaction's `action_last_updated` and `note_last_updated`. Pass this value as `updates_after` in your next request. An empty `updates` array means there are no updates after `updates_after` yet. This value is then not a transaction's timestamp, so keep your current `updates_after` for the next request.
         updates:
           type: array
-          description: The transactions with a disposition or note update after `updates_after`, including a transaction whose manual review period expired. MaxMind sorts by the earliest update timestamp, either the disposition or the note, after `updates_after`. A response usually holds at most 1000 updated transactions. Do not rely on this limit. A transaction can appear in more than one response, for example when its note changes after its disposition, so process updates idempotently.
+          description: The transactions with a disposition or note update after `updates_after`, including a transaction whose manual review period expired. MaxMind sorts in ascending order by the earliest update timestamp, either the disposition or the note, after `updates_after`. A response usually holds at most 1000 updated transactions. Do not rely on this limit. A transaction can appear in more than one response, for example when its note changes after its disposition, so process updates idempotently.
           items:
             $ref: '#/components/schemas/DispositionUpdate'
   examples:

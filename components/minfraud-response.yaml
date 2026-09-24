@@ -663,11 +663,12 @@ schemas:
         description: >-
           The transactions with a disposition or note update after
           `updates_after`, including a transaction whose manual review period
-          expired. MaxMind sorts by the earliest update timestamp, either the
-          disposition or the note, after `updates_after`. A response usually
-          holds at most 1000 updated transactions. Do not rely on this limit. A
-          transaction can appear in more than one response, for example when its
-          note changes after its disposition, so process updates idempotently.
+          expired. MaxMind sorts in ascending order by the earliest update
+          timestamp, either the disposition or the note, after `updates_after`.
+          A response usually holds at most 1000 updated transactions. Do not
+          rely on this limit. A transaction can appear in more than one
+          response, for example when its note changes after its disposition, so
+          process updates idempotently.
         items:
           $ref: "#/schemas/DispositionUpdate"
   DispositionUpdate:
