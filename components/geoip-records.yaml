@@ -436,14 +436,14 @@ schemas:
   MaxMind:
     type: object
     description: >-
-      Information about your MaxMind account.
+      Information about your MaxMind account. The GeoLite Country and GeoLite
+      City web services do not return this object.
     properties:
       queries_remaining:
         type: integer
         minimum: 0
         description: >-
           The approximate number of queries left for the endpoint you called.
-          The GeoLite City web service does not include this field.
   CountryResponse:
     type: object
     required:

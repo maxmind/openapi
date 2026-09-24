@@ -287,12 +287,12 @@ components:
           $ref: '#/components/schemas/Names'
     MaxMind:
       type: object
-      description: Information about your MaxMind account.
+      description: Information about your MaxMind account. The GeoLite Country and GeoLite City web services do not return this object.
       properties:
         queries_remaining:
           type: integer
           minimum: 0
-          description: The approximate number of queries left for the endpoint you called. The GeoLite City web service does not include this field.
+          description: The approximate number of queries left for the endpoint you called.
     RepresentedCountry:
       description: The country represented by users of an IP address, for example the country represented by an overseas military base.
       allOf:
