@@ -1,4 +1,7 @@
 summary: GeoIP Insights response
+description: >-
+  These illustrative values show available fields and do not describe a single
+  real lookup.
 value:
   continent:
     code: NA
@@ -29,6 +32,7 @@ value:
     queries_remaining: 54321
   registered_country:
     geoname_id: 6252001
+    is_in_european_union: true
     iso_code: US
     names:
       de: USA
@@ -41,6 +45,7 @@ value:
       zh-CN: 美国
   represented_country:
     geoname_id: 6252001
+    is_in_european_union: true
     iso_code: US
     names:
       de: USA

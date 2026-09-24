@@ -1971,6 +1971,7 @@ components:
             quantity: 1
     score:
       summary: minFraud Score response
+      description: These illustrative values show available fields and do not describe a single real transaction.
       value:
         disposition:
           action: accept
@@ -1998,6 +1999,7 @@ components:
         error: You do not have sufficient funds to use this service.
     insights:
       summary: minFraud Insights response
+      description: These illustrative values show available fields and do not describe a single real transaction.
       value:
         disposition:
           action: accept
@@ -2048,6 +2050,7 @@ components:
           country:
             confidence: 75
             geoname_id: 6252001
+            is_in_european_union: true
             iso_code: US
             names:
               de: USA
@@ -2072,6 +2075,7 @@ components:
             confidence: 10
           registered_country:
             geoname_id: 6252001
+            is_in_european_union: true
             iso_code: US
             names:
               de: USA
@@ -2084,6 +2088,7 @@ components:
               zh-CN: 美国
           represented_country:
             geoname_id: 6252001
+            is_in_european_union: true
             iso_code: US
             names:
               de: USA
@@ -2200,6 +2205,7 @@ components:
           number_type: mobile
     factors:
       summary: minFraud Factors response
+      description: These illustrative values show available fields and do not describe a single real transaction.
       value:
         disposition:
           action: accept
@@ -2250,6 +2256,7 @@ components:
           country:
             confidence: 75
             geoname_id: 6252001
+            is_in_european_union: true
             iso_code: US
             names:
               de: USA
@@ -2274,6 +2281,7 @@ components:
             confidence: 10
           registered_country:
             geoname_id: 6252001
+            is_in_european_union: true
             iso_code: US
             names:
               de: USA
@@ -2286,6 +2294,7 @@ components:
               zh-CN: 美国
           represented_country:
             geoname_id: 6252001
+            is_in_european_union: true
             iso_code: US
             names:
               de: USA

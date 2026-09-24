@@ -1,4 +1,7 @@
 summary: minFraud Score response
+description: >-
+  These illustrative values show available fields and do not describe a single
+  real transaction.
 value:
   disposition:
     action: accept

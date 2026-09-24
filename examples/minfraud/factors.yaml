@@ -1,4 +1,7 @@
 summary: minFraud Factors response
+description: >-
+  These illustrative values show available fields and do not describe a single
+  real transaction.
 value:
   disposition:
     action: accept
@@ -49,6 +52,7 @@ value:
     country:
       confidence: 75
       geoname_id: 6252001
+      is_in_european_union: true
       iso_code: US
       names:
         de: USA
@@ -73,6 +77,7 @@ value:
       confidence: 10
     registered_country:
       geoname_id: 6252001
+      is_in_european_union: true
       iso_code: US
       names:
         de: USA
@@ -85,6 +90,7 @@ value:
         zh-CN: 美国
     represented_country:
       geoname_id: 6252001
+      is_in_european_union: true
       iso_code: US
       names:
         de: USA
