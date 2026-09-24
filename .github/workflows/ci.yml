@@ -29,9 +29,10 @@ jobs:
 
       - name: Check that the bundles are current
         run: |
+          rm -rf bundled
           pnpm run bundle
           git add --intent-to-add bundled/
-          git diff --exit-code bundled/
+          git diff --exit-code HEAD -- bundled/
 
       - name: Vet the Go package
         run: go vet ./...
