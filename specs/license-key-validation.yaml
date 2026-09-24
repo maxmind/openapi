@@ -121,7 +121,8 @@ components:
             error: You do not have permission to use this service interface.
     PayloadTooLarge:
       description: >-
-        The request body is too large. The response does not have a JSON body.
+        The request body is larger than 65,536 bytes. The response does not have
+        a JSON body.
     InternalServerError:
       description: >-
         The service had an unexpected error (`SERVER_ERROR`).
