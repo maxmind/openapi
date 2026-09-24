@@ -12,7 +12,7 @@ schemas:
 
 
       A string field allows up to 255 valid Unicode characters unless its schema
-      states a shorter limit. Null and newline characters are not allowed.
+      states a different limit. Null and newline characters are not allowed.
       MaxMind accepts a number sent as a string and a string sent as a number,
       and converts it to the type the field requires.
 

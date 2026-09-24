@@ -988,7 +988,7 @@ components:
 
         MaxMind can add fields to the request body without a version change. A field that MaxMind does not recognize produces an `INPUT_UNKNOWN` warning.
 
-        A string field allows up to 255 valid Unicode characters unless its schema states a shorter limit. Null and newline characters are not allowed. MaxMind accepts a number sent as a string and a string sent as a number, and converts it to the type the field requires.
+        A string field allows up to 255 valid Unicode characters unless its schema states a different limit. Null and newline characters are not allowed. MaxMind accepts a number sent as a string and a string sent as a number, and converts it to the type the field requires.
 
         A value that does not meet a field's constraints, such as its pattern, enum, or length, produces an `INPUT_INVALID` warning in the response. The request still succeeds.
       minProperties: 1
