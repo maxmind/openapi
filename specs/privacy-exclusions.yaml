@@ -140,7 +140,10 @@ components:
         exclusions:
           type: array
           description: >-
-            The current privacy exclusions. Empty if there are none.
+            The current privacy exclusions. Empty if there are none. Each IPv4
+            network appears three times: as the IPv4 network, as the IPv4-mapped
+            IPv6 network in `::ffff:0:0/96`, and as the 6to4 IPv6 network in
+            `2002::/16`. Exclude all three forms.
           items:
             $ref: "#/components/schemas/Exclusion"
   responses:
