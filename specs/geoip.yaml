@@ -25,10 +25,9 @@ info:
     `application/vnd.maxmind.com-error+json; charset=UTF-8; version=2.1`.
 
 
-    MaxMind can add new values to an enumerated field, other than the fixed
-    continent codes, and new locale codes. MaxMind can also add or remove error
-    codes. Clients must handle any 4xx or 5xx status and check `Content-Type`
-    before they decode an error body.
+    MaxMind can add new values to an enumerated field and new locale codes.
+    MaxMind can also add or remove error codes. Clients must handle any 4xx or
+    5xx status and check `Content-Type` before they decode an error body.
   contact:
     name: MaxMind support
     url: https://support.maxmind.com/

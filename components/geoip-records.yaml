@@ -15,15 +15,9 @@ schemas:
     properties:
       code:
         type: string
-        description: The two-character code for the continent.
-        enum:
-          - AF
-          - AN
-          - AS
-          - EU
-          - NA
-          - OC
-          - SA
+        description: >-
+          The two-character code for the continent. Known values: `AF`, `AN`,
+          `AS`, `EU`, `NA`, `OC`, and `SA`. MaxMind may add values.
       geoname_id:
         type: integer
         minimum: 0

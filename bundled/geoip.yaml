@@ -12,7 +12,7 @@ info:
 
     A successful response has a `Content-Type` of `application/vnd.maxmind.com-<service>+json; charset=UTF-8; version=2.1`, for example `application/vnd.maxmind.com-city+json; charset=UTF-8; version=2.1`. An error response has a `Content-Type` of `application/vnd.maxmind.com-error+json; charset=UTF-8; version=2.1`.
 
-    MaxMind can add new values to an enumerated field, other than the fixed continent codes, and new locale codes. MaxMind can also add or remove error codes. Clients must handle any 4xx or 5xx status and check `Content-Type` before they decode an error body.
+    MaxMind can add new values to an enumerated field and new locale codes. MaxMind can also add or remove error codes. Clients must handle any 4xx or 5xx status and check `Content-Type` before they decode an error body.
   contact:
     name: MaxMind support
     url: https://support.maxmind.com/
@@ -262,15 +262,7 @@ components:
       properties:
         code:
           type: string
-          description: The two-character code for the continent.
-          enum:
-            - AF
-            - AN
-            - AS
-            - EU
-            - NA
-            - OC
-            - SA
+          description: 'The two-character code for the continent. Known values: `AF`, `AN`, `AS`, `EU`, `NA`, `OC`, and `SA`. MaxMind may add values.'
         geoname_id:
           type: integer
           minimum: 0
