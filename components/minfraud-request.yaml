@@ -678,7 +678,8 @@ schemas:
       chargeback_code:
         type: string
         description: >-
-          The reason code your payment processor gives for a chargeback.
+          The reason code your payment processor gives for a chargeback. It must
+          not contain a NUL character.
       ip_address:
         type: string
         anyOf:
@@ -702,7 +703,9 @@ schemas:
       notes:
         type: string
         maxLength: 1000
-        description: Your notes on the tag for this transaction.
+        description: >-
+          Your notes on the tag for this transaction. It must not contain a NUL
+          character.
       tag:
         type: string
         enum:
@@ -729,5 +732,6 @@ schemas:
       transaction_id:
         type: string
         minLength: 1
-        description:
-          The transaction ID you gave in the original minFraud request.
+        description: >-
+          The transaction ID you gave in the original minFraud request. It must
+          not contain a NUL character.
