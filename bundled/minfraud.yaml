@@ -649,11 +649,11 @@ components:
         address:
           type: string
           maxLength: 255
-          description: The email address, or the MD5 hash of the normalized email address. Normalize the address before you hash it. See https://dev.maxmind.com/minfraud/normalizing-email-addresses-for-minfraud. A plaintext address must be a valid email address. MaxMind lowercases it, converts an internationalized domain to ASCII, and fixes a few common typos, such as a misspelled `gmail.com`.
+          description: The email address, or the MD5 hash of the normalized email address. Normalize the address before you hash it. See https://dev.maxmind.com/minfraud/normalizing-email-addresses-for-minfraud. A plaintext address must be a valid email address.
         domain:
           type: string
           maxLength: 255
-          description: The domain of the email address. Do not include the `@`. You do not need to send this field unless you send the email address as an MD5 hash. MaxMind lowercases the domain, converts an internationalized domain to ASCII, and fixes a few common typos.
+          description: The domain of the email address. Do not include the `@`. You do not need to send this field unless you send the email address as an MD5 hash.
     Event:
       type: object
       properties:
