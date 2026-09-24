@@ -90,10 +90,6 @@ paths:
               description: '`attachment`, with a `filename` of `<edition_id>_[<artifact_type>_]<YYYYMMDD>.<suffix>`.'
               schema:
                 type: string
-            Content-Type:
-              description: The media type for the `suffix` requested.
-              schema:
-                type: string
         '400':
           $ref: '#/components/responses/DownloadBadRequest'
         '401':
