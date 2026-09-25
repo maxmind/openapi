@@ -1,0 +1,550 @@
+schemas:
+  Names:
+    type: object
+    description: >-
+      A map from a locale code to the localized name for the entity. Known
+      locale codes: de, en, es, fr, ja, pt-BR, ru, zh-CN. If the entity has name
+      data, en is present. No other locale is guaranteed. Names can change
+      between releases. Do not use them as keys. Use `geoname_id`, `iso_code`,
+      or `code`.
+    additionalProperties:
+      type: string
+  Continent:
+    type: object
+    description: The continent associated with an IP address.
+    properties:
+      code:
+        type: string
+        description: >-
+          The two-character code for the continent. Known values: `AF`, `AN`,
+          `AS`, `EU`, `NA`, `OC`, and `SA`. MaxMind may add values.
+      geoname_id:
+        type: integer
+        minimum: 0
+        description: The GeoNames ID for the continent.
+      names:
+        $ref: "#/schemas/Names"
+  Country:
+    type: object
+    description: A country associated with an IP address.
+    properties:
+      geoname_id:
+        type: integer
+        minimum: 0
+        description: The GeoNames ID for the country.
+      iso_code:
+        type: string
+        description: The two-character ISO 3166-1 country code.
+      is_in_european_union:
+        type: boolean
+        description:
+          True if the country is a member state of the European Union.
+      names:
+        $ref: "#/schemas/Names"
+  CountryWithConfidence:
+    description: >-
+      A country associated with an IP address, with MaxMind's confidence in the
+      result. Only the Insights response's `country` object includes
+      `confidence`.
+    allOf:
+      - $ref: "#/schemas/Country"
+      - type: object
+        properties:
+          confidence:
+            type: integer
+            minimum: 0
+            maximum: 100
+            description:
+              MaxMind's confidence that the country is correct, from 0 to 100.
+  RepresentedCountry:
+    description: >-
+      The country represented by users of an IP address, for example the country
+      represented by an overseas military base.
+    allOf:
+      - $ref: "#/schemas/Country"
+      - type: object
+        properties:
+          type:
+            type: string
+            description: >-
+              The type of represented country. Known value: military. MaxMind
+              may add other values.
+  City:
+    type: object
+    description: The city associated with an IP address.
+    properties:
+      geoname_id:
+        type: integer
+        minimum: 0
+        description: The GeoNames ID for the city.
+      names:
+        $ref: "#/schemas/Names"
+  CityWithConfidence:
+    description: >-
+      A city associated with an IP address, with MaxMind's confidence in the
+      result. Only the Insights response's `city` object includes `confidence`.
+    allOf:
+      - $ref: "#/schemas/City"
+      - type: object
+        properties:
+          confidence:
+            type: integer
+            minimum: 0
+            maximum: 100
+            description:
+              MaxMind's confidence that the city is correct, from 0 to 100.
+  Postal:
+    type: object
+    description: The postal code associated with an IP address.
+    properties:
+      code:
+        type: string
+        description: >-
+          A postal code close to the IP address's location. For some countries,
+          MaxMind returns only part of the code, with this many characters:
+          Brazil 5, Canada 3, Ireland 3, Japan 7, Netherlands 4, Portugal 7,
+          Singapore 2, United Kingdom 2-4, United States 5. For Japan, the last
+          digit defaults to 1. For Portugal, the last 3 digits often default to
+          `-001`.
+  PostalWithConfidence:
+    description: >-
+      A postal code associated with an IP address, with MaxMind's confidence in
+      the result. Only the Insights response's `postal` object includes
+      `confidence`.
+    allOf:
+      - $ref: "#/schemas/Postal"
+      - type: object
+        properties:
+          confidence:
+            type: integer
+            minimum: 0
+            maximum: 100
+            description: >-
+              MaxMind's confidence that the postal code is correct, from 0 to
+              100.
+  Subdivision:
+    type: object
+    description: A subdivision of the country associated with an IP address.
+    properties:
+      geoname_id:
+        type: integer
+        minimum: 0
+        description: The GeoNames ID for the subdivision.
+      iso_code:
+        type: string
+        description:
+          Up to three characters from the ISO 3166-2 code for the subdivision.
+      names:
+        $ref: "#/schemas/Names"
+  SubdivisionWithConfidence:
+    description: >-
+      A subdivision of the country associated with an IP address, with MaxMind's
+      confidence in the result. Only the Insights response's `subdivisions`
+      entries include `confidence`.
+    allOf:
+      - $ref: "#/schemas/Subdivision"
+      - type: object
+        properties:
+          confidence:
+            type: integer
+            minimum: 0
+            maximum: 100
+            description: >-
+              MaxMind's confidence that the subdivision is correct, from 0 to
+              100.
+  Location:
+    type: object
+    description: Location details for an IP address.
+    properties:
+      accuracy_radius:
+        type: integer
+        minimum: 0
+        description: >-
+          The approximate accuracy radius, in kilometers, around the latitude
+          and longitude. MaxMind has 67% confidence that the true location falls
+          within this radius of the coordinates.
+      latitude:
+        type: number
+        minimum: -90
+        maximum: 90
+        description: >-
+          The approximate WGS 84 latitude for the location. The coordinates are
+          not precise. Do not use them to identify a street address or
+          household. When you show the coordinates, also show `accuracy_radius`.
+      longitude:
+        type: number
+        minimum: -180
+        maximum: 180
+        description: >-
+          The approximate WGS 84 longitude for the location. The coordinates are
+          not precise. Do not use them to identify a street address or
+          household. When you show the coordinates, also show `accuracy_radius`.
+      metro_code:
+        type: integer
+        minimum: 0
+        deprecated: true
+        description: >-
+          Deprecated. A code that Google previously used to target ads. MaxMind
+          no longer maintains this code.
+      time_zone:
+        type: string
+        description: >-
+          The IANA time zone for the location, for example `America/New_York`.
+  InsightsLocation:
+    description: >-
+      Location details for an IP address, including the fields the Insights
+      response adds beyond City Plus.
+    allOf:
+      - $ref: "#/schemas/Location"
+      - type: object
+        properties:
+          average_income:
+            type: integer
+            minimum: 0
+            description: >-
+              The average annual income, in US dollars, for the IP address's
+              location. Only available for IP addresses in the US.
+          population_density:
+            type: integer
+            minimum: 0
+            description: >-
+              The estimated number of people per square kilometer at the IP
+              address's location. Only available for IP addresses in the US.
+  CountryTraits:
+    type: object
+    description:
+      General traits for an IP address, as returned by the Country response.
+    required:
+      - ip_address
+      - network
+    properties:
+      ip_address:
+        type: string
+        description: >-
+          The IPv4 or IPv6 address that was looked up.
+      is_anycast:
+        type: boolean
+        description: True if the IP address belongs to an anycast network.
+      network:
+        type: string
+        description: >-
+          The largest network, in CIDR notation, that shares the same data as
+          this record, apart from `ip_address` itself.
+  CityTraits:
+    description: >-
+      General traits for an IP address, including the fields the City Plus
+      response adds beyond Country.
+    allOf:
+      - $ref: "#/schemas/CountryTraits"
+      - type: object
+        properties:
+          autonomous_system_number:
+            type: integer
+            minimum: 0
+            description: The autonomous system number for the IP address.
+          autonomous_system_organization:
+            type: string
+            description: The organization for the autonomous system number.
+          connection_type:
+            type: string
+            description: >-
+              The connection type for the IP address. Known values: `Cable/DSL`,
+              `Cellular`, `Corporate`, `Satellite`. MaxMind may add values.
+              GeoLite City does not include this field.
+          domain:
+            type: string
+            description: >-
+              The second-level domain for the IP address, for example
+              `example.com`. This is not a subdomain such as `foo.example.com`.
+              GeoLite City does not include this field.
+          isp:
+            type: string
+            description: >-
+              The ISP for the IP address. GeoLite City does not include this
+              field.
+          mobile_country_code:
+            type: string
+            description: >-
+              The mobile country code (MCC) for the IP address and ISP. GeoLite
+              City does not include this field.
+          mobile_network_code:
+            type: string
+            description: >-
+              The mobile network code (MNC) for the IP address and ISP. GeoLite
+              City does not include this field.
+          organization:
+            type: string
+            description: >-
+              The organization for the IP address. GeoLite City does not include
+              this field.
+  InsightsTraits:
+    description: >-
+      General traits for an IP address, including the fields the Insights
+      response adds beyond City Plus.
+    allOf:
+      - $ref: "#/schemas/CityTraits"
+      - type: object
+        properties:
+          ip_risk_snapshot:
+            type: number
+            minimum: 0.01
+            maximum: 99
+            description: >-
+              A snapshot of the risk for the IP address, from 0.01 to 99. A
+              higher value means higher risk. This score changes less often than
+              the equivalent minFraud score and does not respond to traffic on
+              your network. MaxMind omits this field when it has no signals for
+              the network or when the signals show the network is low risk.
+          is_anonymous:
+            type: boolean
+            deprecated: true
+            description: >-
+              Deprecated. True if the IP address belongs to any anonymous
+              network. Moved to the `anonymizer` object. Kept here for backward
+              compatibility.
+          is_anonymous_vpn:
+            type: boolean
+            deprecated: true
+            description: >-
+              Deprecated. True if the IP address belongs to an anonymous VPN
+              provider. Moved to the `anonymizer` object. Kept here for backward
+              compatibility.
+          is_hosting_provider:
+            type: boolean
+            deprecated: true
+            description: >-
+              Deprecated. True if the IP address belongs to a hosting provider.
+              Moved to the `anonymizer` object. Kept here for backward
+              compatibility.
+          is_public_proxy:
+            type: boolean
+            deprecated: true
+            description: >-
+              Deprecated. True if the IP address belongs to a public proxy.
+              Moved to the `anonymizer` object. Kept here for backward
+              compatibility.
+          is_residential_proxy:
+            type: boolean
+            deprecated: true
+            description: >-
+              Deprecated. True if the IP address is on a suspected anonymizing
+              network and belongs to a residential ISP. This excludes
+              peer-to-peer proxy IP addresses. Moved to the `anonymizer` object.
+              Kept here for backward compatibility.
+          is_tor_exit_node:
+            type: boolean
+            deprecated: true
+            description: >-
+              Deprecated. True if the IP address is a Tor exit node. Moved to
+              the `anonymizer` object. Kept here for backward compatibility.
+          static_ip_score:
+            type: number
+            minimum: 0
+            maximum: 99.99
+            description: >-
+              How static the IP address is, from 0 to 99.99. A higher value
+              means a more static address.
+          user_count:
+            type: integer
+            minimum: 0
+            description: >-
+              The estimated number of users on the IP address or network in the
+              past 24 hours. For IPv4, this counts the single IP address. For
+              IPv6, this counts the /64 network.
+          user_type:
+            type: string
+            description: >-
+              The user type for the IP address. Known values: `business`,
+              `cafe`, `cellular`, `college`, `consumer_privacy_network`,
+              `content_delivery_network`, `government`, `hosting`, `library`,
+              `military`, `residential`, `router`, `school`,
+              `search_engine_spider`, `traveler`.
+  AnonymizerResidential:
+    type: object
+    description: >-
+      Data about the residential proxy network associated with an IP address.
+      Only in the Insights response.
+    properties:
+      confidence:
+        type: integer
+        minimum: 1
+        maximum: 99
+        description: >-
+          MaxMind's confidence that the network is an actively used residential
+          proxy, from 1 to 99.
+      network_last_seen:
+        type: string
+        format: date
+        description: >-
+          The last date MaxMind saw the network in its residential proxy
+          analysis.
+      provider_name:
+        type: string
+        description: >-
+          The name of the residential proxy provider, for example `oxylabs`.
+          MaxMind identifies only a subset of residential proxy providers.
+  Anonymizer:
+    type: object
+    description: >-
+      Whether an IP address is part of an anonymizing service or network. Only
+      in the Insights response.
+    properties:
+      confidence:
+        type: integer
+        minimum: 1
+        maximum: 99
+        description: >-
+          MaxMind's confidence that the network is an actively used VPN, from 1
+          to 99. MaxMind currently returns only 30 or 99, and will add more
+          values over time.
+      is_anonymous:
+        type: boolean
+        description: True if the IP address belongs to any anonymous network.
+      is_anonymous_vpn:
+        type: boolean
+        description: >-
+          True if the IP address belongs to an anonymous VPN provider. Some VPN
+          providers register their ranges under other names, so MaxMind may flag
+          them with `is_hosting_provider` instead.
+      is_hosting_provider:
+        type: boolean
+        description: True if the IP address belongs to a hosting provider.
+      is_public_proxy:
+        type: boolean
+        description: True if the IP address belongs to a public proxy.
+      is_residential_proxy:
+        type: boolean
+        description: >-
+          True if the IP address is on a suspected anonymizing network and
+          belongs to a residential ISP. This excludes peer-to-peer proxy IP
+          addresses.
+      is_tor_exit_node:
+        type: boolean
+        description: True if the IP address is a Tor exit node.
+      network_last_seen:
+        type: string
+        format: date
+        description:
+          The last date MaxMind saw the network in its anonymizer analysis.
+      provider_name:
+        type: string
+        description: >-
+          The name of the VPN provider, for example `nordvpn`. MaxMind
+          identifies only a subset of VPN providers.
+      residential:
+        $ref: "#/schemas/AnonymizerResidential"
+  MaxMind:
+    type: object
+    description: >-
+      Information about your MaxMind account. The GeoLite Country and GeoLite
+      City web services do not return this object.
+    properties:
+      queries_remaining:
+        type: integer
+        minimum: 0
+        description: >-
+          The approximate number of queries left for the endpoint you called.
+  CountryResponse:
+    type: object
+    required:
+      - traits
+    description: The GeoIP Country response.
+    properties:
+      continent:
+        $ref: "#/schemas/Continent"
+        description: The continent for the IP address.
+      country:
+        $ref: "#/schemas/Country"
+        description:
+          The country where MaxMind believes the IP address's user is located.
+      maxmind:
+        $ref: "#/schemas/MaxMind"
+      registered_country:
+        $ref: "#/schemas/Country"
+        description: The country where the ISP registered the IP address.
+      represented_country:
+        $ref: "#/schemas/RepresentedCountry"
+      traits:
+        $ref: "#/schemas/CountryTraits"
+        description: General traits for the IP address.
+  CityResponse:
+    type: object
+    required:
+      - traits
+    description: The GeoIP City Plus response.
+    properties:
+      city:
+        $ref: "#/schemas/City"
+        description: The city for the IP address.
+      continent:
+        $ref: "#/schemas/Continent"
+        description: The continent for the IP address.
+      country:
+        $ref: "#/schemas/Country"
+        description:
+          The country where MaxMind believes the IP address's user is located.
+      location:
+        $ref: "#/schemas/Location"
+        description: Location details for the IP address.
+      maxmind:
+        $ref: "#/schemas/MaxMind"
+      postal:
+        $ref: "#/schemas/Postal"
+        description: The postal code for the IP address.
+      registered_country:
+        $ref: "#/schemas/Country"
+        description: The country where the ISP registered the IP address.
+      represented_country:
+        $ref: "#/schemas/RepresentedCountry"
+      subdivisions:
+        type: array
+        description: >-
+          The subdivisions of the country associated with the IP address,
+          ordered from largest to smallest.
+        items:
+          $ref: "#/schemas/Subdivision"
+      traits:
+        $ref: "#/schemas/CityTraits"
+        description: General traits for the IP address.
+  InsightsResponse:
+    type: object
+    required:
+      - traits
+    description: The GeoIP Insights response.
+    properties:
+      anonymizer:
+        $ref: "#/schemas/Anonymizer"
+        description: Anonymizer data for the IP address.
+      city:
+        $ref: "#/schemas/CityWithConfidence"
+        description: The city for the IP address.
+      continent:
+        $ref: "#/schemas/Continent"
+        description: The continent for the IP address.
+      country:
+        $ref: "#/schemas/CountryWithConfidence"
+        description:
+          The country where MaxMind believes the IP address's user is located.
+      location:
+        $ref: "#/schemas/InsightsLocation"
+        description: Location details for the IP address.
+      maxmind:
+        $ref: "#/schemas/MaxMind"
+      postal:
+        $ref: "#/schemas/PostalWithConfidence"
+        description: The postal code for the IP address.
+      registered_country:
+        $ref: "#/schemas/Country"
+        description: The country where the ISP registered the IP address.
+      represented_country:
+        $ref: "#/schemas/RepresentedCountry"
+      subdivisions:
+        type: array
+        description: >-
+          The subdivisions of the country associated with the IP address,
+          ordered from largest to smallest.
+        items:
+          $ref: "#/schemas/SubdivisionWithConfidence"
+      traits:
+        $ref: "#/schemas/InsightsTraits"
+        description: General traits for the IP address.

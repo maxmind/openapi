@@ -1,0 +1,968 @@
+openapi: 3.1.2
+info:
+  title: GeoIP and GeoLite web services
+  version: 0.1.0
+  summary: IP geolocation and network data for an IPv4 or IPv6 address.
+  description: |-
+    The GeoIP web services return geolocation and network data for an IP address. GeoIP Country, GeoIP City Plus, and GeoIP Insights are available on `geoip.maxmind.com`. GeoLite Country and GeoLite City are available on `geolite.info`.
+
+    If a key maps to an undefined or empty value, the response leaves out the key. This applies to top-level keys and to the keys of nested objects.
+
+    MaxMind can add keys to a response without a version change. Clients must ignore keys that they do not know.
+
+    A successful response has a `Content-Type` of `application/vnd.maxmind.com-<service>+json; charset=UTF-8; version=2.1`, for example `application/vnd.maxmind.com-city+json; charset=UTF-8; version=2.1`. An error response has a `Content-Type` of `application/vnd.maxmind.com-error+json; charset=UTF-8; version=2.1`.
+
+    MaxMind can add new values to an enumerated field and new locale codes. MaxMind can also add or remove error codes. Clients must handle any 4xx or 5xx status and check `Content-Type` before they decode an error body.
+  contact:
+    name: MaxMind support
+    url: https://support.maxmind.com/
+  license:
+    name: Apache 2.0 or MIT
+    identifier: Apache-2.0 OR MIT
+  termsOfService: https://www.maxmind.com/en/terms-of-use
+servers:
+  - url: https://geoip.maxmind.com/geoip/v2.1
+    description: GeoIP web services
+  - url: https://geolite.info/geoip/v2.1
+    description: GeoLite web services (Country and City only)
+  - url: https://sandbox.maxmind.com/geoip/v2.1
+    description: GeoIP sandbox. Use a license key from a Sandbox account. The sandbox returns fixed test data for a small set of IP addresses. Other addresses return `IP_ADDRESS_NOT_FOUND`.
+security:
+  - basicAuth: []
+tags:
+  - name: GeoIP
+    description: IP geolocation lookups.
+externalDocs:
+  description: GeoIP web services documentation
+  url: https://dev.maxmind.com/geoip/docs/web-services/
+paths:
+  /country/{ip_address}:
+    get:
+      operationId: getCountry
+      summary: Look up country data
+      description: Returns GeoIP Country data for the IP address. On `geolite.info`, this returns GeoLite Country data.
+      tags:
+        - GeoIP
+      parameters:
+        - $ref: '#/components/parameters/IPAddress'
+        - $ref: '#/components/parameters/Pretty'
+      responses:
+        '200':
+          description: The Country record for the IP address.
+          content:
+            application/vnd.maxmind.com-country+json:
+              schema:
+                $ref: '#/components/schemas/CountryResponse'
+              examples:
+                country:
+                  $ref: '#/components/examples/country'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /city/{ip_address}:
+    get:
+      operationId: getCity
+      summary: Look up city data
+      description: Returns GeoIP City Plus data for the IP address. On `geolite.info`, this returns GeoLite City data.
+      tags:
+        - GeoIP
+      parameters:
+        - $ref: '#/components/parameters/IPAddress'
+        - $ref: '#/components/parameters/Pretty'
+      responses:
+        '200':
+          description: The City record for the IP address.
+          content:
+            application/vnd.maxmind.com-city+json:
+              schema:
+                $ref: '#/components/schemas/CityResponse'
+              examples:
+                city:
+                  $ref: '#/components/examples/city'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /insights/{ip_address}:
+    servers:
+      - url: https://geoip.maxmind.com/geoip/v2.1
+        description: GeoIP web services
+      - url: https://sandbox.maxmind.com/geoip/v2.1
+        description: GeoIP sandbox. Use a license key from a Sandbox account. The sandbox returns fixed test data for a small set of IP addresses. Other addresses return `IP_ADDRESS_NOT_FOUND`.
+    get:
+      operationId: getInsights
+      summary: Look up insights data
+      description: Returns GeoIP Insights data for the IP address. GeoLite does not offer this service.
+      tags:
+        - GeoIP
+      parameters:
+        - $ref: '#/components/parameters/IPAddress'
+        - $ref: '#/components/parameters/Pretty'
+      responses:
+        '200':
+          description: The Insights record for the IP address.
+          content:
+            application/vnd.maxmind.com-insights+json:
+              schema:
+                $ref: '#/components/schemas/InsightsResponse'
+              examples:
+                insights:
+                  $ref: '#/components/examples/insights'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: The username is your MaxMind account ID. The password is your MaxMind license key. The service accepts HTTPS requests only, with TLS 1.2 or higher.
+  parameters:
+    IPAddress:
+      name: ip_address
+      in: path
+      required: true
+      description: The IPv4 or IPv6 address to look up. Use the lowercase string `me` to look up the IP address that sends the request. For IPv6, the canonical form in RFC 5952 is recommended, but any valid form without a zone ID is accepted.
+      schema:
+        type: string
+      examples:
+        ipv4:
+          value: 1.2.3.4
+        ipv6:
+          value: 2001:db8::1:0:0:1
+        me:
+          value: me
+    Pretty:
+      name: pretty
+      in: query
+      required: false
+      description: If present, the response body is indented for reading, for example `?pretty`.
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: |-
+        The request is not valid. The `code` is one of:
+        - `IP_ADDRESS_REQUIRED`: the request has an empty IP address.
+        - `IP_ADDRESS_INVALID`: the IP address is not a valid IPv4 or IPv6 address.
+        - `IP_ADDRESS_RESERVED`: the IP address is in a reserved or private range.
+        - `SERVICE_INVALID`: the service is not available on this host. On `geolite.info`, only Country and City are available.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: IP_ADDRESS_RESERVED
+            error: You have supplied an IP address which belongs to a reserved or private range.
+    Unauthorized:
+      description: |-
+        The credentials are missing or not valid. The `code` is one of:
+        - `AUTHORIZATION_INVALID`: the account ID or license key is not valid.
+        - `ACCOUNT_ID_REQUIRED`: the Basic credentials have no account ID.
+        - `LICENSE_KEY_REQUIRED`: the Basic credentials have no license key.
+      headers:
+        WWW-Authenticate:
+          description: HTTP Basic authentication.
+          schema:
+            type: string
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: AUTHORIZATION_INVALID
+            error: Your account ID or license key could not be authenticated.
+    PaymentRequired:
+      description: The account has no funds for this service (`INSUFFICIENT_FUNDS`). For GeoLite, `INSUFFICIENT_FUNDS` means the account used its daily query limit.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: INSUFFICIENT_FUNDS
+            error: You do not have sufficient funds to use this service.
+    Forbidden:
+      description: The account does not have permission to use this service (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also gets this status, but without a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: PERMISSION_REQUIRED
+            error: You do not have permission to use the service.
+    NotFound:
+      description: The IP address is not in the database (`IP_ADDRESS_NOT_FOUND`). Some 404 responses do not have a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: IP_ADDRESS_NOT_FOUND
+            error: The IP address '1.2.3.4' is not in our database.
+    TooManyRequests:
+      description: MaxMind rate-limited the request, usually because of too many earlier error responses. The response may have no body.
+    InternalServerError:
+      description: The service had an unexpected error (`SERVER_ERROR`). The response may have no body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: SERVER_ERROR
+            error: There was an error when processing this request.
+    ServiceUnavailable:
+      description: The service has a temporary problem. Send the request again later. The response does not have a JSON body.
+  schemas:
+    Names:
+      type: object
+      description: 'A map from a locale code to the localized name for the entity. Known locale codes: de, en, es, fr, ja, pt-BR, ru, zh-CN. If the entity has name data, en is present. No other locale is guaranteed. Names can change between releases. Do not use them as keys. Use `geoname_id`, `iso_code`, or `code`.'
+      additionalProperties:
+        type: string
+    Continent:
+      type: object
+      description: The continent associated with an IP address.
+      properties:
+        code:
+          type: string
+          description: 'The two-character code for the continent. Known values: `AF`, `AN`, `AS`, `EU`, `NA`, `OC`, and `SA`. MaxMind may add values.'
+        geoname_id:
+          type: integer
+          minimum: 0
+          description: The GeoNames ID for the continent.
+        names:
+          $ref: '#/components/schemas/Names'
+    Country:
+      type: object
+      description: A country associated with an IP address.
+      properties:
+        geoname_id:
+          type: integer
+          minimum: 0
+          description: The GeoNames ID for the country.
+        iso_code:
+          type: string
+          description: The two-character ISO 3166-1 country code.
+        is_in_european_union:
+          type: boolean
+          description: True if the country is a member state of the European Union.
+        names:
+          $ref: '#/components/schemas/Names'
+    MaxMind:
+      type: object
+      description: Information about your MaxMind account. The GeoLite Country and GeoLite City web services do not return this object.
+      properties:
+        queries_remaining:
+          type: integer
+          minimum: 0
+          description: The approximate number of queries left for the endpoint you called.
+    RepresentedCountry:
+      description: The country represented by users of an IP address, for example the country represented by an overseas military base.
+      allOf:
+        - $ref: '#/components/schemas/Country'
+        - type: object
+          properties:
+            type:
+              type: string
+              description: 'The type of represented country. Known value: military. MaxMind may add other values.'
+    CountryTraits:
+      type: object
+      description: General traits for an IP address, as returned by the Country response.
+      required:
+        - ip_address
+        - network
+      properties:
+        ip_address:
+          type: string
+          description: The IPv4 or IPv6 address that was looked up.
+        is_anycast:
+          type: boolean
+          description: True if the IP address belongs to an anycast network.
+        network:
+          type: string
+          description: The largest network, in CIDR notation, that shares the same data as this record, apart from `ip_address` itself.
+    CountryResponse:
+      type: object
+      required:
+        - traits
+      description: The GeoIP Country response.
+      properties:
+        continent:
+          $ref: '#/components/schemas/Continent'
+          description: The continent for the IP address.
+        country:
+          $ref: '#/components/schemas/Country'
+          description: The country where MaxMind believes the IP address's user is located.
+        maxmind:
+          $ref: '#/components/schemas/MaxMind'
+        registered_country:
+          $ref: '#/components/schemas/Country'
+          description: The country where the ISP registered the IP address.
+        represented_country:
+          $ref: '#/components/schemas/RepresentedCountry'
+        traits:
+          $ref: '#/components/schemas/CountryTraits'
+          description: General traits for the IP address.
+    Error:
+      type: object
+      description: Not all error responses have a JSON body. Check the `Content-Type` header before you decode the body as JSON.
+      required:
+        - code
+        - error
+      properties:
+        code:
+          type: string
+          description: A static error code for machine use. The meaning of a code never changes, but MaxMind can add or remove codes.
+          examples:
+            - IP_ADDRESS_INVALID
+        error:
+          type: string
+          description: A human-readable description of the error. The text can change at any time.
+          examples:
+            - The value '1.2.3' is not a valid IP address.
+    City:
+      type: object
+      description: The city associated with an IP address.
+      properties:
+        geoname_id:
+          type: integer
+          minimum: 0
+          description: The GeoNames ID for the city.
+        names:
+          $ref: '#/components/schemas/Names'
+    Location:
+      type: object
+      description: Location details for an IP address.
+      properties:
+        accuracy_radius:
+          type: integer
+          minimum: 0
+          description: The approximate accuracy radius, in kilometers, around the latitude and longitude. MaxMind has 67% confidence that the true location falls within this radius of the coordinates.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: The approximate WGS 84 latitude for the location. The coordinates are not precise. Do not use them to identify a street address or household. When you show the coordinates, also show `accuracy_radius`.
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          description: The approximate WGS 84 longitude for the location. The coordinates are not precise. Do not use them to identify a street address or household. When you show the coordinates, also show `accuracy_radius`.
+        metro_code:
+          type: integer
+          minimum: 0
+          deprecated: true
+          description: Deprecated. A code that Google previously used to target ads. MaxMind no longer maintains this code.
+        time_zone:
+          type: string
+          description: The IANA time zone for the location, for example `America/New_York`.
+    Postal:
+      type: object
+      description: The postal code associated with an IP address.
+      properties:
+        code:
+          type: string
+          description: 'A postal code close to the IP address''s location. For some countries, MaxMind returns only part of the code, with this many characters: Brazil 5, Canada 3, Ireland 3, Japan 7, Netherlands 4, Portugal 7, Singapore 2, United Kingdom 2-4, United States 5. For Japan, the last digit defaults to 1. For Portugal, the last 3 digits often default to `-001`.'
+    Subdivision:
+      type: object
+      description: A subdivision of the country associated with an IP address.
+      properties:
+        geoname_id:
+          type: integer
+          minimum: 0
+          description: The GeoNames ID for the subdivision.
+        iso_code:
+          type: string
+          description: Up to three characters from the ISO 3166-2 code for the subdivision.
+        names:
+          $ref: '#/components/schemas/Names'
+    CityTraits:
+      description: General traits for an IP address, including the fields the City Plus response adds beyond Country.
+      allOf:
+        - $ref: '#/components/schemas/CountryTraits'
+        - type: object
+          properties:
+            autonomous_system_number:
+              type: integer
+              minimum: 0
+              description: The autonomous system number for the IP address.
+            autonomous_system_organization:
+              type: string
+              description: The organization for the autonomous system number.
+            connection_type:
+              type: string
+              description: 'The connection type for the IP address. Known values: `Cable/DSL`, `Cellular`, `Corporate`, `Satellite`. MaxMind may add values. GeoLite City does not include this field.'
+            domain:
+              type: string
+              description: The second-level domain for the IP address, for example `example.com`. This is not a subdomain such as `foo.example.com`. GeoLite City does not include this field.
+            isp:
+              type: string
+              description: The ISP for the IP address. GeoLite City does not include this field.
+            mobile_country_code:
+              type: string
+              description: The mobile country code (MCC) for the IP address and ISP. GeoLite City does not include this field.
+            mobile_network_code:
+              type: string
+              description: The mobile network code (MNC) for the IP address and ISP. GeoLite City does not include this field.
+            organization:
+              type: string
+              description: The organization for the IP address. GeoLite City does not include this field.
+    CityResponse:
+      type: object
+      required:
+        - traits
+      description: The GeoIP City Plus response.
+      properties:
+        city:
+          $ref: '#/components/schemas/City'
+          description: The city for the IP address.
+        continent:
+          $ref: '#/components/schemas/Continent'
+          description: The continent for the IP address.
+        country:
+          $ref: '#/components/schemas/Country'
+          description: The country where MaxMind believes the IP address's user is located.
+        location:
+          $ref: '#/components/schemas/Location'
+          description: Location details for the IP address.
+        maxmind:
+          $ref: '#/components/schemas/MaxMind'
+        postal:
+          $ref: '#/components/schemas/Postal'
+          description: The postal code for the IP address.
+        registered_country:
+          $ref: '#/components/schemas/Country'
+          description: The country where the ISP registered the IP address.
+        represented_country:
+          $ref: '#/components/schemas/RepresentedCountry'
+        subdivisions:
+          type: array
+          description: The subdivisions of the country associated with the IP address, ordered from largest to smallest.
+          items:
+            $ref: '#/components/schemas/Subdivision'
+        traits:
+          $ref: '#/components/schemas/CityTraits'
+          description: General traits for the IP address.
+    AnonymizerResidential:
+      type: object
+      description: Data about the residential proxy network associated with an IP address. Only in the Insights response.
+      properties:
+        confidence:
+          type: integer
+          minimum: 1
+          maximum: 99
+          description: MaxMind's confidence that the network is an actively used residential proxy, from 1 to 99.
+        network_last_seen:
+          type: string
+          format: date
+          description: The last date MaxMind saw the network in its residential proxy analysis.
+        provider_name:
+          type: string
+          description: The name of the residential proxy provider, for example `oxylabs`. MaxMind identifies only a subset of residential proxy providers.
+    Anonymizer:
+      type: object
+      description: Whether an IP address is part of an anonymizing service or network. Only in the Insights response.
+      properties:
+        confidence:
+          type: integer
+          minimum: 1
+          maximum: 99
+          description: MaxMind's confidence that the network is an actively used VPN, from 1 to 99. MaxMind currently returns only 30 or 99, and will add more values over time.
+        is_anonymous:
+          type: boolean
+          description: True if the IP address belongs to any anonymous network.
+        is_anonymous_vpn:
+          type: boolean
+          description: True if the IP address belongs to an anonymous VPN provider. Some VPN providers register their ranges under other names, so MaxMind may flag them with `is_hosting_provider` instead.
+        is_hosting_provider:
+          type: boolean
+          description: True if the IP address belongs to a hosting provider.
+        is_public_proxy:
+          type: boolean
+          description: True if the IP address belongs to a public proxy.
+        is_residential_proxy:
+          type: boolean
+          description: True if the IP address is on a suspected anonymizing network and belongs to a residential ISP. This excludes peer-to-peer proxy IP addresses.
+        is_tor_exit_node:
+          type: boolean
+          description: True if the IP address is a Tor exit node.
+        network_last_seen:
+          type: string
+          format: date
+          description: The last date MaxMind saw the network in its anonymizer analysis.
+        provider_name:
+          type: string
+          description: The name of the VPN provider, for example `nordvpn`. MaxMind identifies only a subset of VPN providers.
+        residential:
+          $ref: '#/components/schemas/AnonymizerResidential'
+    CityWithConfidence:
+      description: A city associated with an IP address, with MaxMind's confidence in the result. Only the Insights response's `city` object includes `confidence`.
+      allOf:
+        - $ref: '#/components/schemas/City'
+        - type: object
+          properties:
+            confidence:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: MaxMind's confidence that the city is correct, from 0 to 100.
+    CountryWithConfidence:
+      description: A country associated with an IP address, with MaxMind's confidence in the result. Only the Insights response's `country` object includes `confidence`.
+      allOf:
+        - $ref: '#/components/schemas/Country'
+        - type: object
+          properties:
+            confidence:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: MaxMind's confidence that the country is correct, from 0 to 100.
+    InsightsLocation:
+      description: Location details for an IP address, including the fields the Insights response adds beyond City Plus.
+      allOf:
+        - $ref: '#/components/schemas/Location'
+        - type: object
+          properties:
+            average_income:
+              type: integer
+              minimum: 0
+              description: The average annual income, in US dollars, for the IP address's location. Only available for IP addresses in the US.
+            population_density:
+              type: integer
+              minimum: 0
+              description: The estimated number of people per square kilometer at the IP address's location. Only available for IP addresses in the US.
+    PostalWithConfidence:
+      description: A postal code associated with an IP address, with MaxMind's confidence in the result. Only the Insights response's `postal` object includes `confidence`.
+      allOf:
+        - $ref: '#/components/schemas/Postal'
+        - type: object
+          properties:
+            confidence:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: MaxMind's confidence that the postal code is correct, from 0 to 100.
+    SubdivisionWithConfidence:
+      description: A subdivision of the country associated with an IP address, with MaxMind's confidence in the result. Only the Insights response's `subdivisions` entries include `confidence`.
+      allOf:
+        - $ref: '#/components/schemas/Subdivision'
+        - type: object
+          properties:
+            confidence:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: MaxMind's confidence that the subdivision is correct, from 0 to 100.
+    InsightsTraits:
+      description: General traits for an IP address, including the fields the Insights response adds beyond City Plus.
+      allOf:
+        - $ref: '#/components/schemas/CityTraits'
+        - type: object
+          properties:
+            ip_risk_snapshot:
+              type: number
+              minimum: 0.01
+              maximum: 99
+              description: A snapshot of the risk for the IP address, from 0.01 to 99. A higher value means higher risk. This score changes less often than the equivalent minFraud score and does not respond to traffic on your network. MaxMind omits this field when it has no signals for the network or when the signals show the network is low risk.
+            is_anonymous:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address belongs to any anonymous network. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_anonymous_vpn:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address belongs to an anonymous VPN provider. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_hosting_provider:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address belongs to a hosting provider. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_public_proxy:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address belongs to a public proxy. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_residential_proxy:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address is on a suspected anonymizing network and belongs to a residential ISP. This excludes peer-to-peer proxy IP addresses. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            is_tor_exit_node:
+              type: boolean
+              deprecated: true
+              description: Deprecated. True if the IP address is a Tor exit node. Moved to the `anonymizer` object. Kept here for backward compatibility.
+            static_ip_score:
+              type: number
+              minimum: 0
+              maximum: 99.99
+              description: How static the IP address is, from 0 to 99.99. A higher value means a more static address.
+            user_count:
+              type: integer
+              minimum: 0
+              description: The estimated number of users on the IP address or network in the past 24 hours. For IPv4, this counts the single IP address. For IPv6, this counts the /64 network.
+            user_type:
+              type: string
+              description: 'The user type for the IP address. Known values: `business`, `cafe`, `cellular`, `college`, `consumer_privacy_network`, `content_delivery_network`, `government`, `hosting`, `library`, `military`, `residential`, `router`, `school`, `search_engine_spider`, `traveler`.'
+    InsightsResponse:
+      type: object
+      required:
+        - traits
+      description: The GeoIP Insights response.
+      properties:
+        anonymizer:
+          $ref: '#/components/schemas/Anonymizer'
+          description: Anonymizer data for the IP address.
+        city:
+          $ref: '#/components/schemas/CityWithConfidence'
+          description: The city for the IP address.
+        continent:
+          $ref: '#/components/schemas/Continent'
+          description: The continent for the IP address.
+        country:
+          $ref: '#/components/schemas/CountryWithConfidence'
+          description: The country where MaxMind believes the IP address's user is located.
+        location:
+          $ref: '#/components/schemas/InsightsLocation'
+          description: Location details for the IP address.
+        maxmind:
+          $ref: '#/components/schemas/MaxMind'
+        postal:
+          $ref: '#/components/schemas/PostalWithConfidence'
+          description: The postal code for the IP address.
+        registered_country:
+          $ref: '#/components/schemas/Country'
+          description: The country where the ISP registered the IP address.
+        represented_country:
+          $ref: '#/components/schemas/RepresentedCountry'
+        subdivisions:
+          type: array
+          description: The subdivisions of the country associated with the IP address, ordered from largest to smallest.
+          items:
+            $ref: '#/components/schemas/SubdivisionWithConfidence'
+        traits:
+          $ref: '#/components/schemas/InsightsTraits'
+          description: General traits for the IP address.
+  examples:
+    country:
+      summary: GeoIP Country response
+      description: These illustrative values show available fields and do not describe a single real lookup.
+      value:
+        continent:
+          code: NA
+          geoname_id: 123456
+          names:
+            de: Nordamerika
+            en: North America
+            es: América del Norte
+            fr: Amérique du Nord
+            ja: 北アメリカ
+            pt-BR: América do Norte
+            ru: Северная Америка
+            zh-CN: 北美洲
+        country:
+          geoname_id: 6252001
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+        maxmind:
+          queries_remaining: 54321
+        registered_country:
+          geoname_id: 6252001
+          is_in_european_union: true
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+        represented_country:
+          geoname_id: 6252001
+          is_in_european_union: true
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+          type: military
+        traits:
+          ip_address: 1.2.3.4
+          is_anycast: true
+          network: 1.2.3.0/24
+    city:
+      summary: GeoIP City Plus response
+      description: These illustrative values show available fields and do not describe a single real lookup.
+      value:
+        continent:
+          code: NA
+          geoname_id: 123456
+          names:
+            de: Nordamerika
+            en: North America
+            es: América del Norte
+            fr: Amérique du Nord
+            ja: 北アメリカ
+            pt-BR: América do Norte
+            ru: Северная Америка
+            zh-CN: 北美洲
+        country:
+          geoname_id: 6252001
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+        maxmind:
+          queries_remaining: 54321
+        registered_country:
+          geoname_id: 6252001
+          is_in_european_union: true
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+        represented_country:
+          geoname_id: 6252001
+          is_in_european_union: true
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+          type: military
+        traits:
+          ip_address: 1.2.3.4
+          is_anycast: true
+          network: 1.2.3.0/24
+          autonomous_system_number: 1239
+          autonomous_system_organization: Linkem IR WiMax Network
+          connection_type: Cable/DSL
+          domain: example.com
+          isp: Linkem spa
+          mobile_country_code: '310'
+          mobile_network_code: '004'
+          organization: Linkem IR WiMax Network
+        city:
+          geoname_id: 54321
+          names:
+            de: Los Angeles
+            en: Los Angeles
+            es: Los Ángeles
+            fr: Los Angeles
+            ja: ロサンゼルス市
+            pt-BR: Los Angeles
+            ru: Лос-Анджелес
+            zh-CN: 洛杉矶
+        location:
+          accuracy_radius: 20
+          latitude: 37.6293
+          longitude: -122.1163
+          metro_code: 807
+          time_zone: America/Los_Angeles
+        postal:
+          code: '90001'
+        subdivisions:
+          - geoname_id: 5332921
+            iso_code: CA
+            names:
+              de: Kalifornien
+              en: California
+              es: California
+              fr: Californie
+              ja: カリフォルニア
+              ru: Калифорния
+              zh-CN: 加州
+    insights:
+      summary: GeoIP Insights response
+      description: These illustrative values show available fields and do not describe a single real lookup.
+      value:
+        continent:
+          code: NA
+          geoname_id: 123456
+          names:
+            de: Nordamerika
+            en: North America
+            es: América del Norte
+            fr: Amérique du Nord
+            ja: 北アメリカ
+            pt-BR: América do Norte
+            ru: Северная Америка
+            zh-CN: 北美洲
+        country:
+          geoname_id: 6252001
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+          confidence: 75
+        maxmind:
+          queries_remaining: 54321
+        registered_country:
+          geoname_id: 6252001
+          is_in_european_union: true
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+        represented_country:
+          geoname_id: 6252001
+          is_in_european_union: true
+          iso_code: US
+          names:
+            de: USA
+            en: United States
+            es: Estados Unidos
+            fr: États-Unis
+            ja: アメリカ合衆国
+            pt-BR: Estados Unidos
+            ru: США
+            zh-CN: 美国
+          type: military
+        anonymizer:
+          confidence: 99
+          is_anonymous: true
+          is_anonymous_vpn: true
+          is_hosting_provider: true
+          is_public_proxy: true
+          is_residential_proxy: true
+          is_tor_exit_node: true
+          network_last_seen: '2025-01-15'
+          provider_name: nordvpn
+          residential:
+            confidence: 82
+            network_last_seen: '2026-05-11'
+            provider_name: quickshift
+        traits:
+          ip_address: 1.2.3.4
+          ip_risk_snapshot: 45.5
+          is_anycast: true
+          network: 1.2.3.0/24
+          autonomous_system_number: 1239
+          autonomous_system_organization: Linkem IR WiMax Network
+          connection_type: Cable/DSL
+          domain: example.com
+          isp: Linkem spa
+          mobile_country_code: '310'
+          mobile_network_code: '004'
+          organization: Linkem IR WiMax Network
+          is_anonymous: true
+          is_anonymous_vpn: true
+          is_hosting_provider: true
+          is_public_proxy: true
+          is_residential_proxy: true
+          is_tor_exit_node: true
+          static_ip_score: 1.5
+          user_count: 1
+          user_type: traveler
+        city:
+          confidence: 25
+          geoname_id: 54321
+          names:
+            de: Los Angeles
+            en: Los Angeles
+            es: Los Ángeles
+            fr: Los Angeles
+            ja: ロサンゼルス市
+            pt-BR: Los Angeles
+            ru: Лос-Анджелес
+            zh-CN: 洛杉矶
+        location:
+          accuracy_radius: 20
+          latitude: 37.6293
+          longitude: -122.1163
+          metro_code: 807
+          time_zone: America/Los_Angeles
+          average_income: 128321
+          population_density: 1234
+        postal:
+          code: '90001'
+          confidence: 10
+        subdivisions:
+          - geoname_id: 5332921
+            iso_code: CA
+            names:
+              de: Kalifornien
+              en: California
+              es: California
+              fr: Californie
+              ja: カリフォルニア
+              ru: Калифорния
+              zh-CN: 加州
+            confidence: 50

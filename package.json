@@ -1,0 +1,14 @@
+{
+  "name": "maxmind-openapi",
+  "private": true,
+  "license": "Apache-2.0 OR MIT",
+  "type": "module",
+  "scripts": {
+    "bundle": "redocly bundle",
+    "lint": "redocly lint"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.53.3",
+    "prettier": "^3.9.8"
+  }
+}

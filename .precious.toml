@@ -1,0 +1,23 @@
+[commands.prettier]
+type = "both"
+include = ["**/*.{json,md,yaml,yml}"]
+exclude = ["bundled/**", "pnpm-lock.yaml"]
+cmd = ["pnpm", "exec", "prettier"]
+invoke = "once"
+path-args = "absolute-file"
+lint-flags = ["--check"]
+tidy-flags = ["--write"]
+ok-exit-codes = 0
+lint-failure-exit-codes = 1
+ignore-stderr = ["Code style issues"]
+
+[commands.redocly]
+type = "lint"
+include = ["specs/**", "components/**", "examples/**", "redocly.yaml"]
+cmd = ["pnpm", "exec", "redocly", "lint"]
+invoke = "once"
+path-args = "none"
+ok-exit-codes = 0
+lint-failure-exit-codes = 1
+# Redocly writes its progress to stderr. The exit code reports lint failures.
+ignore-stderr = ["validated in"]

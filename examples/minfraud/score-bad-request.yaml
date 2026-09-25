@@ -1,0 +1,4 @@
+summary: Score REQUEST_INVALID response
+value:
+  code: REQUEST_INVALID
+  error: The request did not contain any valid input values.

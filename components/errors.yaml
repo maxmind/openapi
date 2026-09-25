@@ -1,0 +1,24 @@
+schemas:
+  Error:
+    type: object
+    description: >-
+      Not all error responses have a JSON body. Check the `Content-Type` header
+      before you decode the body as JSON.
+    required:
+      - code
+      - error
+    properties:
+      code:
+        type: string
+        description: >-
+          A static error code for machine use. The meaning of a code never
+          changes, but MaxMind can add or remove codes.
+        examples:
+          - IP_ADDRESS_INVALID
+      error:
+        type: string
+        description: >-
+          A human-readable description of the error. The text can change at any
+          time.
+        examples:
+          - "The value '1.2.3' is not a valid IP address."

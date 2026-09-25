@@ -1,0 +1,603 @@
+openapi: 3.1.2
+info:
+  title: minFraud web services
+  version: 0.1.0
+  summary: Fraud risk scoring for an online transaction.
+  description: >-
+    The minFraud web services score a transaction for fraud risk. Score,
+    Insights, and Factors accept the same request body and return increasingly
+    detailed risk data. Report a transaction's outcome to improve future
+    scoring, and read back manual disposition changes made in the account
+    portal.
+
+
+    MaxMind can add fields, warning codes, and enum values to a response without
+    a version change. Clients must ignore keys and values that they do not know.
+  contact:
+    name: MaxMind support
+    url: https://support.maxmind.com/
+  license:
+    name: Apache 2.0 or MIT
+    identifier: Apache-2.0 OR MIT
+  termsOfService: https://www.maxmind.com/en/terms-of-use
+externalDocs:
+  description: minFraud API documentation
+  url: https://dev.maxmind.com/minfraud/api-documentation/
+servers:
+  - url: https://minfraud.maxmind.com
+    description: minFraud web services
+security:
+  - basicAuth: []
+tags:
+  - name: Score, Insights, and Factors
+    description: Score a transaction for fraud risk.
+  - name: Report a Transaction
+    description: Report a transaction's outcome to improve future scoring.
+  - name: Dispositions
+    description:
+      Read manual disposition and note changes made in the account portal.
+  - name: Alerts
+    description: >-
+      Receive a webhook when MaxMind re-scores a low-risk transaction as high
+      risk.
+paths:
+  /minfraud/v2.0/score:
+    servers:
+      - url: https://minfraud.maxmind.com
+        description: minFraud web services
+      - url: https://sandbox.maxmind.com
+        description: minFraud sandbox
+    post:
+      operationId: postScore
+      summary: Score a transaction
+      description: >-
+        Returns the overall risk score and the risk for the IP address, but no
+        other risk factor data.
+      tags:
+        - Score, Insights, and Factors
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/api-documentation/responses/
+      requestBody:
+        $ref: "#/components/requestBodies/Transaction"
+      responses:
+        "200":
+          description: The Score response for the transaction.
+          content:
+            application/vnd.maxmind.com-minfraud-score+json:
+              schema:
+                $ref: "../components/minfraud-response.yaml#/schemas/Score"
+              examples:
+                score:
+                  $ref: "../examples/minfraud/score.yaml"
+        "400":
+          $ref: "#/components/responses/ScoreBadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/ScorePayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /minfraud/v2.0/insights:
+    servers:
+      - url: https://minfraud.maxmind.com
+        description: minFraud web services
+      - url: https://sandbox.maxmind.com
+        description: minFraud sandbox
+    post:
+      operationId: postInsights
+      summary: Score a transaction with IP intelligence
+      description: >-
+        Returns every field in the Score response, plus IP intelligence data
+        such as anonymizer detection, and risk data about the device, email,
+        billing address, shipping address, and credit card.
+      tags:
+        - Score, Insights, and Factors
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/api-documentation/responses/
+      requestBody:
+        $ref: "#/components/requestBodies/Transaction"
+      responses:
+        "200":
+          description: The Insights response for the transaction.
+          content:
+            application/vnd.maxmind.com-minfraud-insights+json:
+              schema:
+                $ref: "../components/minfraud-response.yaml#/schemas/Insights"
+              examples:
+                insights:
+                  $ref: "../examples/minfraud/insights.yaml"
+        "400":
+          $ref: "#/components/responses/ScoreBadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/ScorePayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /minfraud/v2.0/factors:
+    servers:
+      - url: https://minfraud.maxmind.com
+        description: minFraud web services
+      - url: https://sandbox.maxmind.com
+        description: minFraud sandbox
+    post:
+      operationId: postFactors
+      summary: Score a transaction with risk factors
+      description: >-
+        Returns every field in the Insights response, plus the risk score
+        reasons that explain the risk score.
+      tags:
+        - Score, Insights, and Factors
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/api-documentation/responses/
+      requestBody:
+        $ref: "#/components/requestBodies/Transaction"
+      responses:
+        "200":
+          description: The Factors response for the transaction.
+          content:
+            application/vnd.maxmind.com-minfraud-factors+json:
+              schema:
+                $ref: "../components/minfraud-response.yaml#/schemas/Factors"
+              examples:
+                factors:
+                  $ref: "../examples/minfraud/factors.yaml"
+        "400":
+          $ref: "#/components/responses/ScoreBadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/ScorePayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /minfraud/v2.0/transactions/report:
+    post:
+      operationId: reportTransaction
+      summary: Report a transaction's outcome
+      description: >-
+        Reports a transaction as fraud, legitimate, or another outcome, so
+        MaxMind can use it to improve future risk scores. Give at least one of
+        `ip_address`, `maxmind_id`, `minfraud_id`, and `transaction_id` in the
+        request body so MaxMind can match the report to the original
+        transaction.
+      tags:
+        - Report a Transaction
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/report-a-transaction/
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/minfraud-request.yaml#/schemas/TransactionReport"
+            examples:
+              transactionReport:
+                $ref: "../examples/minfraud/transaction-report.yaml"
+      responses:
+        "204":
+          description: MaxMind accepted the report.
+        "400":
+          $ref: "#/components/responses/ReportBadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/ReportPayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /minfraud/disposition/v1.0/updates:
+    get:
+      operationId: listDispositionUpdates
+      summary: List disposition and note updates
+      description: >-
+        Returns transactions whose disposition or note changed, through the
+        account portal's manual review, after `updates_after`. Use this only if
+        you set dispositions or notes from the account portal and need those
+        changes in your own system.
+      tags:
+        - Dispositions
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/working-with-transaction-dispositions/
+      parameters:
+        - name: updates_after
+          in: query
+          required: true
+          description: >-
+            An exclusive lower bound, as an RFC 3339 timestamp. MaxMind returns
+            only updates made after this time. URL-encode the value, for example
+            send a `+` in the UTC offset as `%2B`. Pass the previous response's
+            `last_update_timestamp` to page through results.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: The transactions with a disposition or note update.
+          content:
+            application/vnd.maxmind.com-disposition-updates+json:
+              schema:
+                $ref: "../components/minfraud-response.yaml#/schemas/DispositionUpdatesResponse"
+              examples:
+                dispositionUpdates:
+                  $ref: "../examples/minfraud/disposition-updates.yaml"
+        "400":
+          $ref: "#/components/responses/DispositionBadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+webhooks:
+  minFraudAlert:
+    get:
+      operationId: minFraudAlert
+      security: []
+      summary: Receive a minFraud Alert
+      description: >-
+        MaxMind monitors a transaction for 24 hours after it first scores 10 or
+        below. If new information raises the re-calculated risk score to 75 or
+        above, MaxMind sends this request to the webhook URL you configure in
+        the account portal. Your endpoint must accept `GET` requests over HTTPS.
+
+
+        MaxMind can add query parameters. Ignore parameters you do not know.
+        Requests come from `34.27.174.58` or `2600:1900:4000:947::/64`. These
+        source addresses can change.
+      tags:
+        - Alerts
+      externalDocs:
+        url: https://dev.maxmind.com/minfraud/alerts/
+      parameters:
+        - name: User-Agent
+          in: header
+          required: false
+          description: The value is `MaxMind MinFraud Alert Robot`.
+          schema:
+            type: string
+        - name: X-MaxMind-Alert-HMAC-SHA256
+          in: header
+          required: false
+          description: >-
+            The hex-encoded HMAC-SHA256 signature of the raw query string, using
+            the webhook secret you configure in the account portal. Present only
+            when you configure a secret.
+          schema:
+            type: string
+        - name: city
+          in: query
+          required: false
+          description: The billing city from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 255
+        - name: country
+          in: query
+          required: false
+          description: The billing country from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 2
+        - name: date
+          in: query
+          required: false
+          description: >-
+            The date of the original minFraud request, for example `Nov. 1,
+            2019`.
+          schema:
+            type: string
+            maxLength: 255
+        - name: domain
+          in: query
+          required: false
+          description: The email domain from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 255
+        - name: i
+          in: query
+          required: false
+          description: The IP address from the original minFraud request.
+          schema:
+            type: string
+            anyOf:
+              - format: ipv4
+              - format: ipv6
+              - maxLength: 0
+        - name: maxmindID
+          in: query
+          required: false
+          description: The minFraud Legacy `maxmindID` of the original request.
+          schema:
+            type: string
+            maxLength: 8
+        - name: minfraud_id
+          in: query
+          required: false
+          description: The minFraud ID of the original request.
+          schema:
+            type: string
+            format: uuid
+        - name: new_risk_score
+          in: query
+          required: false
+          description:
+            The risk score MaxMind recalculated with additional information.
+          schema:
+            type: number
+            minimum: 0.01
+            maximum: 99
+        - name: old_risk_score
+          in: query
+          required: false
+          description: The risk score as originally calculated.
+          schema:
+            type: number
+            minimum: 0.01
+            maximum: 99
+        - name: postal
+          in: query
+          required: false
+          description:
+            The billing postal code from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 255
+        - name: reason
+          in: query
+          required: false
+          description:
+            A human-readable explanation of why MaxMind sent the alert.
+          schema:
+            type: string
+        - name: reason_code
+          in: query
+          required: false
+          description: >-
+            A machine-readable code for why MaxMind sent the alert. Known
+            values: `CARDER_EMAIL`, `HIGH_RISK_DEVICE`, `HIGH_RISK_IP`,
+            `HOSTING_PROVIDER`, `MANUAL_REVIEW`, `POSTAL_VELOCITY`. These values
+            can change.
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: false
+          description: The billing region from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 4
+        - name: shop_id
+          in: query
+          required: false
+          description: >-
+            The shop ID from the original minFraud request. Present only when
+            the original request gave one.
+          schema:
+            type: string
+            maxLength: 255
+        - name: txnID
+          in: query
+          required: false
+          description: The transaction ID from the original minFraud request.
+          schema:
+            type: string
+            maxLength: 255
+        - name: updated_at
+          in: query
+          required: false
+          description: >-
+            The date and time the new risk score was calculated, in RFC 3339
+            format, for example `2019-11-01T12:34:56Z`.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "2XX":
+          description: The receiving endpoint returned a successful HTTP status.
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: >-
+        The username is your MaxMind account ID. The password is your MaxMind
+        license key. The service accepts HTTPS requests only, with TLS 1.2 or
+        higher.
+  requestBodies:
+    Transaction:
+      description: The request body must not exceed 20,000 bytes.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/minfraud-request.yaml#/schemas/Request"
+          examples:
+            request:
+              $ref: "../examples/minfraud/request.yaml"
+  responses:
+    ScoreBadRequest:
+      description: >-
+        The request is not valid. The `code` is one of:
+
+        - `JSON_INVALID`: the request body is not a JSON object.
+
+        - `REQUEST_INVALID`: the request body is valid JSON but has no valid
+        input values.
+
+        - `REQUEST_TOO_BIG`: the request body is too large.
+
+        - `BAD_REQUEST`: there was a problem reading or decoding the request
+        body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          examples:
+            error:
+              $ref: "../examples/minfraud/score-bad-request.yaml"
+    ReportBadRequest:
+      description: >-
+        The request is not valid. The `code` is one of:
+
+        - `JSON_INVALID`: the request body is not a valid JSON object.
+
+        - `PARAMETER_UNKNOWN`: the request has a key this endpoint does not use.
+
+        - `TAG_REQUIRED`: the request has no `tag`.
+
+        - `TAG_INVALID`: `tag` is not one of the accepted values.
+
+        - `TRANSACTION_ID_REQUIRED`: the request has none of `ip_address`,
+        `maxmind_id`, `minfraud_id`, and `transaction_id`.
+
+        - `IP_ADDRESS_INVALID`: `ip_address` is not a valid IPv4 or IPv6
+        address.
+
+        - `IP_ADDRESS_RESERVED`: `ip_address` is in a reserved or private range.
+
+        - `MAXMIND_ID_INVALID`: `maxmind_id` is not a valid MaxMind ID. It must
+        be 8 characters of digits and uppercase letters.
+
+        - `MINFRAUD_ID_INVALID`: `minfraud_id` is not a valid UUID.
+
+        - `NOTES_INVALID`: `notes` is over 1000 Unicode characters or contains a
+        NUL character.
+
+        - Other `_INVALID` codes, for example `TRANSACTION_ID_INVALID`: the
+        value of that field is not valid. `TRANSACTION_ID_INVALID` and
+        `CHARGEBACK_CODE_INVALID` also cover a field that contains a NUL
+        character.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          examples:
+            error:
+              $ref: "../examples/minfraud/report-bad-request.yaml"
+    DispositionBadRequest:
+      description: >-
+        The request is not valid. The `code` is one of:
+
+        - `UPDATES_AFTER_REQUIRED`: the request has no `updates_after`
+        parameter, or its value is empty.
+
+        - `TIMESTAMP_INVALID`: `updates_after` is not a valid RFC 3339
+        timestamp.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          examples:
+            error:
+              $ref: "../examples/minfraud/disposition-bad-request.yaml"
+    Unauthorized:
+      description: >-
+        The credentials are missing or not valid. The `code` is one of:
+
+        - `AUTHORIZATION_INVALID`: the account ID or license key is not valid.
+
+        - `ACCOUNT_ID_REQUIRED`: the Basic credentials have no account ID.
+
+        - `LICENSE_KEY_REQUIRED`: the Basic credentials have no license key.
+      headers:
+        WWW-Authenticate:
+          description: HTTP Basic authentication.
+          schema:
+            type: string
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          examples:
+            error:
+              value:
+                code: AUTHORIZATION_INVALID
+                error:
+                  Your account ID or license key could not be authenticated.
+    PaymentRequired:
+      description:
+        The account has no funds for this service (`INSUFFICIENT_FUNDS`).
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          examples:
+            error:
+              $ref: "../examples/minfraud/error.yaml"
+    Forbidden:
+      description: >-
+        The account does not have permission to use this service
+        (`PERMISSION_REQUIRED`). A request that uses HTTP instead of HTTPS also
+        gets this status, but without a JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          examples:
+            error:
+              value:
+                code: PERMISSION_REQUIRED
+                error: You do not have permission to use the service.
+    ScorePayloadTooLarge:
+      description: >-
+        The request body is larger than 20,000 bytes. The response does not have
+        a JSON body.
+    ReportPayloadTooLarge:
+      description: >-
+        The request body is larger than 65,536 bytes. The response does not have
+        a JSON body.
+    TooManyRequests:
+      description: >-
+        MaxMind rate-limited the request, usually because of too many earlier
+        error responses. The response may have no body.
+    InternalServerError:
+      description: >-
+        The service had an unexpected error (`SERVER_ERROR`). The response may
+        have no JSON body.
+      content:
+        application/vnd.maxmind.com-error+json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          examples:
+            error:
+              value:
+                code: SERVER_ERROR
+                error: There was an error when processing this request.
+    ServiceUnavailable:
+      description: >-
+        The service has a temporary problem. Send the request again later. The
+        response does not have a JSON body.

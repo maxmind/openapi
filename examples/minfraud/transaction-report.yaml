@@ -1,0 +1,5 @@
+summary: Transaction report request
+value:
+  ip_address: 1.2.3.4
+  tag: suspected_fraud
+  transaction_id: "1"

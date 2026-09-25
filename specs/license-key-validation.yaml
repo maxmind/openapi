@@ -1,0 +1,139 @@
+openapi: 3.1.2
+info:
+  title: License Key Validation API
+  version: 0.1.0
+  summary:
+    Check whether a license key has a valid format and is known to MaxMind.
+  description: >-
+    The License Key Validation API checks whether a license key has a valid
+    format and whether MaxMind knows the key. It does not check what products or
+    services the license key can access, or return the account that owns the
+    key. Use this API to scan your own code and configuration for secrets, so
+    that license keys do not end up in places you did not intend.
+
+
+    Clients must handle any 4xx or 5xx status and check `Content-Type` before
+    they decode an error body.
+  contact:
+    name: MaxMind support
+    url: https://support.maxmind.com/
+  license:
+    name: Apache 2.0 or MIT
+    identifier: Apache-2.0 OR MIT
+  termsOfService: https://www.maxmind.com/en/terms-of-use
+externalDocs:
+  description: License Key Validation API documentation
+  url: https://dev.maxmind.com/license-key-validation-api/
+servers:
+  - url: https://secret-scanning.maxmind.com
+    description: License key validation
+tags:
+  - name: License key validation
+    description: Check a license key's format and validity.
+paths:
+  /secrets/validate-license-key:
+    post:
+      operationId: validateLicenseKey
+      summary: Validate a license key
+      description: >-
+        Checks whether a license key has a valid format and is known to MaxMind.
+        The request carries the license key to validate, so it needs no other
+        authorization.
+      tags:
+        - License key validation
+      security: []
+      externalDocs:
+        description: License Key Validation API documentation
+        url: https://dev.maxmind.com/license-key-validation-api/
+      requestBody:
+        description:
+          The request body must use `application/x-www-form-urlencoded`.
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - license_key
+              properties:
+                license_key:
+                  type: string
+                  description: The license key to validate.
+            examples:
+              validate:
+                summary: A license key to validate
+                value:
+                  license_key: your_license_key_here
+      responses:
+        "204":
+          description: The license key has a valid format and MaxMind knows it.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+components:
+  responses:
+    BadRequest:
+      description: >-
+        The request is not valid (`LICENSE_KEY_INVALID`). This happens when the
+        `license_key` field is missing, empty, or not in the format of a MaxMind
+        license key.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: LICENSE_KEY_INVALID
+            error:
+              "'foo-bad-license-key' is not a valid license_key when calling
+              /secrets/validate-license-key."
+    Unauthorized:
+      description: >-
+        The license key has a valid format, but MaxMind does not know it
+        (`AUTHORIZATION_INVALID`).
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: AUTHORIZATION_INVALID
+            error: Your account ID or license key could not be authenticated.
+    Forbidden:
+      description: >-
+        The account that owns the license key does not have permission to use
+        this service (`PERMISSION_REQUIRED`). This response means that MaxMind
+        recognizes the key. An unknown key gets a 401 response instead. A
+        request that uses HTTP instead of HTTPS also gets this status.
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: PERMISSION_REQUIRED
+            error: You do not have permission to use this service interface.
+    PayloadTooLarge:
+      description: >-
+        The request body is larger than 65,536 bytes. The response does not have
+        a JSON body.
+    InternalServerError:
+      description: >-
+        The service had an unexpected error (`SERVER_ERROR`).
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors.yaml#/schemas/Error"
+          example:
+            code: SERVER_ERROR
+            error: There was an error when processing this request.
+    ServiceUnavailable:
+      description: >-
+        The service has a temporary problem. Send the request again later. The
+        response does not have a JSON body.

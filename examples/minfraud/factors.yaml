@@ -1,0 +1,228 @@
+summary: minFraud Factors response
+description: >-
+  These illustrative values show available fields and do not describe a single
+  real transaction.
+value:
+  disposition:
+    action: accept
+    reason: custom_rule
+    rule_label: my_custom_rule
+  funds_remaining: 25
+  id: 5bc5d6c2-b2c8-40af-87f4-6d61af86b6ae
+  ip_address:
+    risk: 0.01
+    anonymizer:
+      confidence: 99
+      is_anonymous: true
+      is_anonymous_vpn: true
+      is_hosting_provider: true
+      is_public_proxy: true
+      is_residential_proxy: true
+      is_tor_exit_node: true
+      network_last_seen: "2025-01-15"
+      provider_name: nordvpn
+      residential:
+        confidence: 82
+        network_last_seen: "2026-05-11"
+        provider_name: quickshift
+    city:
+      confidence: 25
+      geoname_id: 54321
+      names:
+        de: Los Angeles
+        en: Los Angeles
+        es: Los Ángeles
+        fr: Los Angeles
+        ja: ロサンゼルス市
+        pt-BR: Los Angeles
+        ru: Лос-Анджелес
+        zh-CN: 洛杉矶
+    continent:
+      code: NA
+      geoname_id: 123456
+      names:
+        de: Nordamerika
+        en: North America
+        es: América del Norte
+        fr: Amérique du Nord
+        ja: 北アメリカ
+        pt-BR: América do Norte
+        ru: Северная Америка
+        zh-CN: 北美洲
+    country:
+      confidence: 75
+      geoname_id: 6252001
+      is_in_european_union: true
+      iso_code: US
+      names:
+        de: USA
+        en: United States
+        es: Estados Unidos
+        fr: États-Unis
+        ja: アメリカ合衆国
+        pt-BR: Estados Unidos
+        ru: США
+        zh-CN: 美国
+    location:
+      accuracy_radius: 20
+      average_income: 50321
+      latitude: 37.6293
+      local_time: "2015-04-26T01:37:17-08:00"
+      longitude: -122.1163
+      metro_code: 807
+      population_density: 7122
+      time_zone: America/Los_Angeles
+    postal:
+      code: "90001"
+      confidence: 10
+    registered_country:
+      geoname_id: 6252001
+      is_in_european_union: true
+      iso_code: US
+      names:
+        de: USA
+        en: United States
+        es: Estados Unidos
+        fr: États-Unis
+        ja: アメリカ合衆国
+        pt-BR: Estados Unidos
+        ru: США
+        zh-CN: 美国
+    represented_country:
+      geoname_id: 6252001
+      is_in_european_union: true
+      iso_code: US
+      names:
+        de: USA
+        en: United States
+        es: Estados Unidos
+        fr: États-Unis
+        ja: アメリカ合衆国
+        pt-BR: Estados Unidos
+        ru: США
+        zh-CN: 美国
+      type: military
+    risk_reasons:
+      - code: ANONYMOUS_IP
+        reason: The IP address belongs to an anonymous network.
+      - code: MINFRAUD_NETWORK_ACTIVITY
+        reason: >-
+          Suspicious activity has been seen on this IP address across minFraud
+          customers.
+    subdivisions:
+      - confidence: 50
+        geoname_id: 5332921
+        iso_code: CA
+        names:
+          de: Kalifornien
+          en: California
+          es: California
+          fr: Californie
+          ja: カリフォルニア
+          ru: Калифорния
+          zh-CN: 加州
+    traits:
+      autonomous_system_number: 1239
+      autonomous_system_organization: Linkem IR WiMax Network
+      connection_type: Cable/DSL
+      domain: example.com
+      ip_address: 1.2.3.4
+      ip_risk_snapshot: 45.5
+      is_anonymous: true
+      is_anonymous_vpn: true
+      is_anycast: true
+      is_hosting_provider: true
+      is_public_proxy: true
+      is_residential_proxy: true
+      is_tor_exit_node: true
+      isp: Linkem spa
+      mobile_country_code: "310"
+      mobile_network_code: "004"
+      network: 1.2.3.0/24
+      organization: Linkem IR WiMax Network
+      static_ip_score: 1.5
+      user_count: 1
+      user_type: traveler
+  queries_remaining: 5000
+  risk_score: 0.01
+  warnings:
+    - code: INPUT_INVALID
+      input_pointer: /shipping/city
+      warning: >-
+        Encountered value at /shipping/city that does not meet the required
+        constraints
+  billing_address:
+    distance_to_ip_location: 100
+    is_in_ip_country: true
+    is_postal_in_city: true
+    latitude: 37.545
+    longitude: -122.421
+  billing_phone:
+    country: US
+    is_voip: true
+    matches_postal: true
+    network_operator: Verizon/1
+    number_type: fixed
+  credit_card:
+    brand: Visa
+    country: US
+    is_business: true
+    is_issued_in_billing_address_country: true
+    is_prepaid: true
+    is_virtual: true
+    issuer:
+      matches_provided_name: true
+      matches_provided_phone_number: true
+      name: Bank of America
+      phone_number: 800-732-9194
+    type: credit
+  device:
+    confidence: 99
+    id: 7835b099-d385-4e5b-969e-7df26181d73b
+    last_seen: "2016-06-08T14:16:38Z"
+    local_time: "2018-01-02T10:40:11-08:00"
+  email:
+    domain:
+      classification: business
+      first_seen: "2019-01-20"
+      risk: 1.23
+      visit:
+        has_redirect: true
+        last_visited_on: "2025-11-15"
+        status: live
+      volume: 6.5
+    first_seen: "2016-02-03"
+    is_disposable: false
+    is_free: false
+    is_high_risk: true
+  shipping_address:
+    distance_to_billing_address: 22
+    distance_to_ip_location: 15
+    is_high_risk: true
+    is_in_ip_country: true
+    is_postal_in_city: true
+    latitude: 37.632
+    longitude: -122.313
+  shipping_phone:
+    country: CA
+    is_voip: true
+    matches_postal: true
+    network_operator: Telus Mobility-SVR/2
+    number_type: mobile
+  risk_score_reasons:
+    - multiplier: 45
+      reasons:
+        - code: ANONYMOUS_IP
+          reason: The Anonymous IP address raised the overall risk score
+    - multiplier: 1.6
+      reasons:
+        - code: ORG_DISTANCE_RISK
+          reason: >-
+            The risk of the ISP combined with the distance between the billing
+            address and IP address location raised the overall risk score
+    - multiplier: 0.34
+      reasons:
+        - code: PHONE_ACTIVITY
+          reason: >-
+            minFraud network activity of the phone number lowered the overall
+            risk score

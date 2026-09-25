@@ -1,0 +1,737 @@
+schemas:
+  Request:
+    type: object
+    description: >-
+      The minFraud request body. Score, Insights, and Factors accept the same
+      request body. Every object is optional. Add more fields to improve
+      accuracy.
+
+
+      MaxMind can add fields to the request body without a version change. A
+      field that MaxMind does not recognize produces an `INPUT_UNKNOWN` warning.
+
+
+      A string field allows up to 255 valid Unicode characters unless its schema
+      states a different limit. Null and newline characters are not allowed.
+      MaxMind accepts a number sent as a string and a string sent as a number,
+      and converts it to the type the field requires.
+
+
+      A value that does not meet a field's constraints, such as its pattern,
+      enum, or length, produces an `INPUT_INVALID` warning in the response. The
+      request still succeeds.
+    minProperties: 1
+    properties:
+      account:
+        $ref: "#/schemas/Account"
+        description: Information about the account involved in the event.
+      billing:
+        $ref: "#/schemas/Address"
+        description: The billing address for the order.
+      credit_card:
+        $ref: "#/schemas/CreditCard"
+        description: Information about the credit card used.
+      custom_inputs:
+        $ref: "#/schemas/CustomInputs"
+      device:
+        $ref: "#/schemas/Device"
+        description: Information about the device used in the transaction.
+      email:
+        $ref: "#/schemas/Email"
+        description: Information about the email used in the transaction.
+      event:
+        $ref: "#/schemas/Event"
+        description: General information about the event being scored.
+      order:
+        $ref: "#/schemas/Order"
+        description: Information about the order.
+      payment:
+        $ref: "#/schemas/Payment"
+        description: Information about the payment method used.
+      shipping:
+        $ref: "#/schemas/Shipping"
+        description: The shipping address for the order.
+      shopping_cart:
+        type: array
+        description: The items purchased in the order.
+        items:
+          $ref: "#/schemas/ShoppingCartItem"
+  Device:
+    type: object
+    properties:
+      accept_language:
+        type: string
+        maxLength: 255
+        description: The HTTP `Accept-Language` header of the device.
+      ip_address:
+        type: string
+        anyOf:
+          - format: ipv4
+          - format: ipv6
+        description: >-
+          The IPv4 or IPv6 address of the device, in presentation format
+          (dotted-quad notation or IPv6 colon notation). A private or reserved
+          address produces an `IP_ADDRESS_RESERVED` warning.
+      session_age:
+        type: number
+        minimum: 0
+        maximum: 9999999999999
+        description: >-
+          The number of seconds between the creation of the user's session and
+          the transaction. This is not the length of the current visit. It is
+          the time since the start of the first visit.
+      session_id:
+        type: string
+        maxLength: 255
+        description: An ID that identifies a visitor's session on the site.
+      tracking_token:
+        type: string
+        description: >-
+          The token that the Device Tracking Add-On client-side code returns for
+          explicit device linking.
+      user_agent:
+        type: string
+        maxLength: 512
+        description: The HTTP `User-Agent` header of the browser used.
+  Event:
+    type: object
+    properties:
+      party:
+        type: string
+        enum:
+          - agent
+          - customer
+        description: The party that submits the transaction.
+      shop_id:
+        type: string
+        maxLength: 255
+        description: >-
+          Your internal ID for the shop, affiliate, or merchant the order comes
+          from. Required for a reseller, payment provider, gateway, or affiliate
+          network. If you are testing the minFraud service, prefix your shop ID
+          with `test`, or set it to `test`.
+      time:
+        type: string
+        format: date-time
+        description: >-
+          The time the event occurred, in RFC 3339 format. If you omit this
+          field, MaxMind uses the time it receives the request. MaxMind does not
+          recommend this field for live transactions. It can be useful for
+          stored transactions that you score later.
+
+
+          The time must be within the past year. For an older time, MaxMind uses
+          the current time to score the transaction and returns a warning.
+      transaction_id:
+        type: string
+        maxLength: 255
+        description: Your internal ID for the transaction.
+      type:
+        type: string
+        enum:
+          - account_creation
+          - account_login
+          - credit_application
+          - email_change
+          - fund_transfer
+          - password_reset
+          - payout_change
+          - purchase
+          - recurring_purchase
+          - referral
+          - sim_swap
+          - survey
+        description: >-
+          The type of event being scored.
+
+
+          - `account_creation`: the transactor is creating an account.
+
+          - `account_login`: the transactor is logging in to an account.
+
+          - `credit_application`: the transactor is applying for credit.
+
+          - `email_change`: the transactor is changing the email address on an
+          account.
+
+          - `fund_transfer`: the transactor is transferring funds between
+          accounts.
+
+          - `password_reset`: the transactor is resetting a password.
+
+          - `payout_change`: the transactor is changing how you pay them. Use
+          this for any case where you pay your users and they change how you pay
+          them, such as a referral or survey payout.
+
+          - `purchase`: the transactor is making a purchase.
+
+          - `recurring_purchase`: the transactor is setting up a recurring
+          purchase or subscription.
+
+          - `referral`: the transactor is sending you referral traffic, for
+          example by referring someone to your site with an ad.
+
+          - `sim_swap`: for a mobile network operator. A new SIM card or eSIM is
+          being issued for a customer's existing phone number.
+
+          - `survey`: the transactor is starting or completing a survey.
+  Account:
+    type: object
+    properties:
+      user_id:
+        type: string
+        maxLength: 255
+        description: >-
+          Your internal ID for the account. Use an ID that does not change, not
+          a login name that can change. This is not your MaxMind account ID.
+      username_md5:
+        type: string
+        pattern: "^[0-9a-fA-F]{32}$"
+        description: An MD5 hash of the account username.
+  Email:
+    type: object
+    properties:
+      address:
+        type: string
+        maxLength: 255
+        description: >-
+          The email address, or the MD5 hash of the normalized email address.
+          Normalize the address before you hash it. See
+          https://dev.maxmind.com/minfraud/normalizing-email-addresses-for-minfraud.
+          A plaintext address must be a valid email address.
+      domain:
+        type: string
+        maxLength: 255
+        description: >-
+          The domain of the email address. Do not include the `@`. You do not
+          need to send this field unless you send the email address as an MD5
+          hash.
+  Address:
+    type: object
+    description: A billing or shipping address.
+    properties:
+      address:
+        type: string
+        maxLength: 255
+        description: The first line of the street address.
+      address_2:
+        type: string
+        maxLength: 255
+        description: The second line of the street address.
+      city:
+        type: string
+        maxLength: 255
+      company:
+        type: string
+        maxLength: 255
+        description: The company name for the address.
+      country:
+        type: string
+        pattern: "^[A-Z]{2}$"
+        description: >-
+          The two-character ISO 3166-1 alpha-2 country code.
+      first_name:
+        type: string
+        maxLength: 255
+      last_name:
+        type: string
+        maxLength: 255
+      phone_country_code:
+        type: string
+        pattern: "^[0-9]{1,4}$"
+        description: The international calling code for the phone number.
+      phone_number:
+        type: string
+        maxLength: 255
+        description: >-
+          The phone number, without the country code. MaxMind strips punctuation
+          characters. After that, the number must contain only digits.
+      postal:
+        type: string
+        maxLength: 255
+        description: The postal code for the address.
+      region:
+        type: string
+        pattern: "^[0-9A-Z]{1,4}$"
+        description: The ISO 3166-2 subdivision code.
+  Shipping:
+    description: A shipping address, with the delivery speed for the order.
+    allOf:
+      - $ref: "#/schemas/Address"
+      - type: object
+        properties:
+          delivery_speed:
+            type: string
+            enum:
+              - same_day
+              - overnight
+              - expedited
+              - standard
+            description: The shipping speed selected for the order.
+  Payment:
+    type: object
+    properties:
+      decline_code:
+        type: string
+        maxLength: 255
+        description: >-
+          The decline code the payment processor returned. Omit this field if
+          the transaction was not declined.
+      method:
+        type: string
+        enum:
+          - bank_debit
+          - bank_redirect
+          - bank_transfer
+          - buy_now_pay_later
+          - card
+          - crypto
+          - digital_wallet
+          - gift_card
+          - real_time_payment
+          - rewards
+        description: >-
+          The payment method.
+
+
+          - `bank_debit`: a direct debit of the customer's bank account.
+
+          - `bank_redirect`: the customer authorizes payment after
+          authenticating with their bank.
+
+          - `bank_transfer`: the customer pushes funds directly from their bank
+          account.
+
+          - `buy_now_pay_later`: payment through a buy now, pay later provider,
+          such as Affirm, Afterpay, or Klarna.
+
+          - `card`: payment by a credit, debit, or charge card.
+
+          - `crypto`: payment with a cryptocurrency.
+
+          - `digital_wallet`: payment from a digital wallet linked to a card or
+          bank account, such as Apple Pay, Google Pay, or PayPal.
+
+          - `gift_card`: payment with a merchant-sponsored gift card.
+
+          - `real_time_payment`: the customer pushes funds directly from their
+          bank account or another funding source, using an intermediary such as
+          a phone number to authenticate, for example Pix, PayNow, or Swish.
+
+          - `rewards`: payment with rewards or loyalty program incentives.
+      processor:
+        type: string
+        description: The payment processor used for the transaction.
+        enum:
+          - adyen
+          - affirm
+          - afterpay
+          - altapay
+          - amazon_payments
+          - american_express_payment_gateway
+          - apple_pay
+          - aps_payments
+          - authorizenet
+          - balanced
+          - banquest
+          - beanstream
+          - bluepay
+          - bluesnap
+          - boacompra
+          - boku
+          - bpoint
+          - braintree
+          - cardknox
+          - cardpay
+          - cashfree
+          - ccavenue
+          - ccnow
+          - cetelem
+          - chase_paymentech
+          - checkout_com
+          - cielo
+          - collector
+          - commdoo
+          - compropago
+          - concept_payments
+          - conekta
+          - coregateway
+          - creditguard
+          - credorax
+          - cryptomus
+          - ct_payments
+          - cuentadigital
+          - curopayments
+          - cybersource
+          - dalenys
+          - dalpay
+          - datacap
+          - datacash
+          - dibs
+          - digital_river
+          - dlocal
+          - dotpay
+          - ebs
+          - ecomm365
+          - ecommpay
+          - elavon
+          - emerchantpay
+          - epay
+          - epayco
+          - eprocessing_network
+          - epx
+          - eway
+          - exact
+          - fat_zebra
+          - first_atlantic_commerce
+          - first_data
+          - fiserv
+          - g2a_pay
+          - global_payments
+          - gocardless
+          - google_pay
+          - heartland
+          - hipay
+          - ingenico
+          - interac
+          - internetsecure
+          - intuit_quickbooks_payments
+          - iugu
+          - klarna
+          - komoju
+          - lemon_way
+          - mastercard_payment_gateway
+          - mercadopago
+          - mercanet
+          - merchant_esolutions
+          - mirjeh
+          - mollie
+          - moneris_solutions
+          - neopay
+          - neosurf
+          - nmi
+          - oceanpayment
+          - oney
+          - onpay
+          - openbucks
+          - openpaymx
+          - optimal_payments
+          - orangepay
+          - other
+          - pacnet_services
+          - payconex
+          - payeezy
+          - payfast
+          - paygate
+          - paylike
+          - payment_express
+          - paymentwall
+          - payone
+          - paypal
+          - payplus
+          - paysafecard
+          - paysera
+          - paystation
+          - paytm
+          - paytrace
+          - paytrail
+          - payture
+          - payu
+          - payulatam
+          - payvision
+          - payway
+          - payza
+          - pinpayments
+          - placetopay
+          - posconnect
+          - princeton_payment_solutions
+          - psigate
+          - pxp_financial
+          - qiwi
+          - quickpay
+          - raberil
+          - razorpay
+          - rede
+          - redpagos
+          - rewardspay
+          - safecharge
+          - sagepay
+          - securepay
+          - securetrading
+          - shopify_payments
+          - simplify_commerce
+          - skrill
+          - smartcoin
+          - smartdebit
+          - solidtrust_pay
+          - sps_decidir
+          - stripe
+          - summit_payments
+          - synapsefi
+          - systempay
+          - telerecargas
+          - towah
+          - transact_pro
+          - trustly
+          - trustpay
+          - tsys
+          - usa_epay
+          - vantiv
+          - verepay
+          - vericheck
+          - vindicia
+          - virtual_card_services
+          - vme
+          - vpos
+          - windcave
+          - wirecard
+          - worldpay
+          - yaadpay
+      was_authorized:
+        type: boolean
+        description: >-
+          Whether the payment was authorized. Omit this field if the transaction
+          has not yet been approved or denied.
+  CreditCard:
+    type: object
+    properties:
+      avs_result:
+        type: string
+        pattern: "^[A-Za-z0-9]$"
+        description: >-
+          The address verification system (AVS) check result, as your payment
+          processor returns it. MaxMind supports the standard AVS codes.
+      bank_name:
+        type: string
+        maxLength: 255
+        description: The name of the bank that issued the credit card.
+      bank_phone_country_code:
+        type: string
+        pattern: "^[0-9]{1,4}$"
+        description: The international calling code for the bank's phone number.
+      bank_phone_number:
+        type: string
+        maxLength: 255
+        description: >-
+          The bank's phone number, without the country code. MaxMind strips
+          punctuation characters. After that, the number must contain only
+          digits.
+      country:
+        type: string
+        pattern: "^[A-Z]{2}$"
+        description: >-
+          The two-character ISO 3166-1 country code of the card issuer's
+          location. You can send this instead of `issuer_id_number` if you do
+          not want to send partial account numbers, or if your payment processor
+          does not provide them.
+      cvv_result:
+        type: string
+        pattern: "^[A-Za-z0-9]$"
+        description: >-
+          The card verification value (CVV) check result, as your payment
+          processor returns it.
+      issuer_id_number:
+        type: string
+        pattern: "^([0-9]{6}|[0-9]{8})$"
+        description: >-
+          The first 6 or 8 digits of the credit card number. If you do not know
+          whether the number is 6 or 8 digits long, send 6 digits.
+      last_digits:
+        type: string
+        pattern: "^([0-9]{2}|[0-9]{4})$"
+        description: >-
+          The last 2 or 4 digits of the credit card number. Send the last 4
+          digits in most cases. If `issuer_id_number` has 8 digits and the card
+          brand is not Discover, JCB, Mastercard, UnionPay, or Visa, send the
+          last 2 digits.
+      token:
+        type: string
+        maxLength: 255
+        pattern: "^[!-~]+$"
+        not:
+          pattern: "^[0-9]{1,19}$"
+        description: >-
+          A token that uniquely identifies the card, for example one your
+          payment processor gives you. The token must consist of non-space
+          printable ASCII characters. If the token is all digits, it must be
+          more than 19 characters long. The token must not be a primary account
+          number (PAN) or a simple transformation of one. If a valid token looks
+          like a PAN but is not one, you can prefix it with a fixed string, for
+          example `token-`.
+      was_3d_secure_successful:
+        type: boolean
+        description: >-
+          Whether the 3-D Secure check for the transaction was successful. Omit
+          this field if 3-D Secure verification was not used, was unavailable,
+          or had another outcome besides success or failure.
+  Order:
+    type: object
+    properties:
+      affiliate_id:
+        type: string
+        maxLength: 255
+        description: Your internal ID for the affiliate that referred the order.
+      amount:
+        type: number
+        minimum: 0
+        maximum: 9999999999999
+        description: >-
+          The total order amount before taxes and discounts, in the currency
+          given in `currency`.
+      currency:
+        type: string
+        pattern: "^[A-Z]{3}$"
+        description: The ISO 4217 currency code for the order amount.
+      discount_code:
+        type: string
+        maxLength: 255
+        description: >-
+          The discount code applied to the order. Separate multiple discount
+          codes with a comma.
+      has_gift_message:
+        type: boolean
+        description: Whether the order included a gift message.
+      is_gift:
+        type: boolean
+        description: Whether the order was marked as a gift.
+      referrer_uri:
+        type: string
+        maxLength: 1024
+        format: uri
+        description: >-
+          The URI of the site that referred the customer to your site. Must be
+          an absolute URI with a scheme, such as `https://`.
+      subaffiliate_id:
+        type: string
+        maxLength: 255
+        description:
+          Your internal ID for the subaffiliate that referred the order.
+  ShoppingCartItem:
+    type: object
+    description: >-
+      An item purchased in the order. You can hash `category` and `item_id` with
+      a cryptographic hash function and a fixed salt to protect customer
+      privacy. Do not use a random salt. A random salt produces a different hash
+      each time for the same value, which defeats fraud detection.
+    properties:
+      category:
+        type: string
+        maxLength: 255
+        description: The category of the item. This can be a hashed value.
+      item_id:
+        type: string
+        maxLength: 255
+        description: Your internal ID for the item. This can be a hashed value.
+      price:
+        type: number
+        minimum: 0
+        maximum: 9999999999999
+        description: >-
+          The per-unit price of the item. This should use the same currency as
+          the order's `currency`.
+      quantity:
+        type: integer
+        minimum: 0
+        maximum: 9999999999999
+        description: The quantity of the item purchased.
+  CustomInputs:
+    type: object
+    description: >-
+      Values for the custom inputs that you configure for your account.
+      Configure each key first, from Custom Inputs in the account portal. Each
+      key must match a key configured for your account, and the value must match
+      the type configured for that key: a boolean, a number from -9999999999999
+      to 9999999999999, a string of up to 255 characters, or a phone number
+      string of up to 255 characters. MaxMind strips spaces and punctuation from
+      a phone number, and the rest must be digits. A key that your account does
+      not have configured produces an `INPUT_UNKNOWN` warning. Do not send a
+      full credit card number as a value. MaxMind rejects it and returns a
+      warning.
+    additionalProperties:
+      oneOf:
+        - type: boolean
+        - type: number
+          minimum: -9999999999999
+          maximum: 9999999999999
+        - type: string
+          maxLength: 255
+  TransactionReport:
+    type: object
+    description: >-
+      A report of a transaction as fraud, legitimate, or another outcome. You
+      must give at least one of `ip_address`, `maxmind_id`, `minfraud_id`, and
+      `transaction_id`. Give as many of them as you have. This helps MaxMind
+      match the report to the original transaction.
+    required:
+      - tag
+    additionalProperties: false
+    anyOf:
+      - required:
+          - ip_address
+      - required:
+          - maxmind_id
+      - required:
+          - minfraud_id
+      - required:
+          - transaction_id
+    properties:
+      chargeback_code:
+        type: string
+        description: >-
+          The reason code your payment processor gives for a chargeback. It must
+          not contain a NUL character.
+      ip_address:
+        type: string
+        anyOf:
+          - format: ipv4
+          - format: ipv6
+        description: The IP address of the customer placing the order.
+      maxmind_id:
+        type: string
+        pattern: "^[0-9A-Z]{8}$"
+        description: >-
+          The eight-character ID for a minFraud Legacy request. MaxMind returns
+          this in the `maxmindID` field of a minFraud Legacy response. The value
+          must be one MaxMind returned. The value is case sensitive and has only
+          digits and uppercase letters.
+      minfraud_id:
+        type: string
+        format: uuid
+        description: >-
+          The minFraud ID for a minFraud Score, Insights, or Factors request.
+          MaxMind returns this at `/id` in the response.
+      notes:
+        type: string
+        maxLength: 1000
+        description: >-
+          Your notes on the tag for this transaction. It must not contain a NUL
+          character.
+      tag:
+        type: string
+        enum:
+          - chargeback
+          - clear
+          - not_fraud
+          - spam_or_abuse
+          - suspected_fraud
+        description: >-
+          How likely you believe the transaction is to be fraudulent.
+
+
+          - `chargeback`: associate a chargeback with the transaction.
+
+          - `clear`: retract a previous report, because the initial
+          classification was incorrect.
+
+          - `not_fraud`: the transaction was a false positive.
+
+          - `spam_or_abuse`: the transaction was linked to spam or abuse.
+
+          - `suspected_fraud`: a high-risk transaction where fraud has not yet
+          been confirmed.
+      transaction_id:
+        type: string
+        minLength: 1
+        description: >-
+          The transaction ID you gave in the original minFraud request. It must
+          not contain a NUL character.

@@ -1,0 +1,7 @@
+summary: Privacy exclusions response
+value:
+  exclusions:
+    - exclusion_type: ccpa_do_not_sell
+      data_type: network
+      value: 10.0.26.166/32
+      last_updated: "2020-01-08T18:58:38Z"

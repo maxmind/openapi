@@ -1,0 +1,32 @@
+extends:
+  - recommended-strict
+
+rules:
+  # MaxMind APIs are served from fixed public hosts.
+  no-server-example.com: error
+  operation-4xx-response: error
+  # Response schemas allow unknown keys for forward compatibility, but every
+  # key in an example must still be declared.
+  no-invalid-media-type-examples:
+    severity: error
+    allowAdditionalProperties: false
+
+apis:
+  geoip:
+    root: specs/geoip.yaml
+    output: bundled/geoip.yaml
+  minfraud:
+    root: specs/minfraud.yaml
+    output: bundled/minfraud.yaml
+  privacy-exclusions:
+    root: specs/privacy-exclusions.yaml
+    output: bundled/privacy-exclusions.yaml
+  license-key-validation:
+    root: specs/license-key-validation.yaml
+    output: bundled/license-key-validation.yaml
+  downloads:
+    root: specs/downloads.yaml
+    output: bundled/downloads.yaml
+    rules:
+      # A successful download is a redirect (302/307), not a 2xx response.
+      operation-2xx-response: off
