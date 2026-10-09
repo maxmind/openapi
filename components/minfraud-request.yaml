@@ -206,6 +206,17 @@ schemas:
           The domain of the email address. Do not include the `@`. You do not
           need to send this field unless you send the email address as an MD5
           hash.
+      verification_time:
+        type: string
+        format: date-time
+        description: >-
+          The date and time of the most recent verification of the email
+          address, in RFC 3339 date-time format.
+      was_verification_successful:
+        type: boolean
+        description: >-
+          Whether the most recent verification of the email address succeeded.
+          Omit this field if no verification was attempted.
   Address:
     type: object
     description: A billing or shipping address.
