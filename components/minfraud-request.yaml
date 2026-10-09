@@ -26,7 +26,7 @@ schemas:
         $ref: "#/schemas/Account"
         description: Information about the account involved in the event.
       billing:
-        $ref: "#/schemas/Address"
+        $ref: "#/schemas/Billing"
         description: The billing address for the order.
       credit_card:
         $ref: "#/schemas/CreditCard"
@@ -254,6 +254,40 @@ schemas:
         type: string
         pattern: "^[0-9A-Z]{1,4}$"
         description: The ISO 3166-2 subdivision code.
+  Billing:
+    description: A billing address, with phone verification details.
+    allOf:
+      - $ref: "#/schemas/Address"
+      - type: object
+        properties:
+          phone_verification_method:
+            type: string
+            enum:
+              - delivered_code
+              - network
+              - other
+            description: >-
+              The most recent method used to verify the billing phone number.
+
+
+              - `delivered_code`: a code delivered to the phone, such as by SMS,
+              voice call, or messaging app.
+
+              - `network`: verification through the mobile network operator,
+              such as silent network authentication.
+
+              - `other`: another verification method.
+          phone_verification_time:
+            type: string
+            format: date-time
+            description: >-
+              The date and time of the most recent verification of the billing
+              phone number, in RFC 3339 date-time format.
+          phone_was_verification_successful:
+            type: boolean
+            description: >-
+              Whether the most recent verification of the billing phone number
+              succeeded. Omit this field if no verification was attempted.
   Shipping:
     description: A shipping address, with the delivery speed for the order.
     allOf:
