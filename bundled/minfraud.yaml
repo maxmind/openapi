@@ -550,6 +550,25 @@ components:
           type: string
           maxLength: 255
           description: The phone number, without the country code. MaxMind strips punctuation characters. After that, the number must contain only digits.
+        phone_verification_method:
+          type: string
+          enum:
+            - delivered_code
+            - network
+            - other
+          description: |-
+            The most recent method used to verify the phone number.
+
+            - `delivered_code`: a code delivered to the phone, such as by SMS, voice call, or messaging app.
+            - `network`: verification through the mobile network operator, such as silent network authentication.
+            - `other`: another verification method.
+        phone_verification_time:
+          type: string
+          format: date-time
+          description: The date and time of the most recent verification of the phone number, in RFC 3339 date-time format. The time must not be before 1970-01-01T00:00:00Z or more than two days in the future. For a time outside this range, MaxMind ignores the input and returns a warning.
+        phone_was_verification_successful:
+          type: boolean
+          description: Whether the most recent verification of the phone number succeeded. Omit this field if no verification was attempted.
         postal:
           type: string
           maxLength: 255
@@ -1901,6 +1920,9 @@ components:
           last_name: Doe
           phone_country_code: '1'
           phone_number: 203-000-0000
+          phone_verification_method: delivered_code
+          phone_verification_time: '2026-10-01T14:30:00Z'
+          phone_was_verification_successful: true
           postal: '06511'
           region: CT
         credit_card:
@@ -1956,6 +1978,9 @@ components:
           last_name: Doe
           phone_country_code: '1'
           phone_number: 203-000-0000
+          phone_verification_method: delivered_code
+          phone_verification_time: '2026-10-01T14:35:00Z'
+          phone_was_verification_successful: true
           postal: '06515'
           region: CT
         shopping_cart:
