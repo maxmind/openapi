@@ -8,7 +8,7 @@
     "lint": "redocly lint"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.54.3",
+    "@redocly/cli": "^2.59.0",
     "prettier": "^3.9.9"
   }
 }
