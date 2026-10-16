@@ -220,9 +220,14 @@ paths:
       summary: List disposition and note updates
       description: >-
         Returns transactions whose disposition or note changed, through the
-        account portal's manual review, after `updates_after`. Use this only if
-        you set dispositions or notes from the account portal and need those
-        changes in your own system.
+        account portal's manual review, after `updates_after` or `cursor`. Use
+        this only if you set dispositions or notes from the account portal and
+        need those changes in your own system.
+
+
+        Send `updates_after` on the first request. To get the next page, send
+        the response's `next_cursor` as `cursor`. MaxMind returns a change one
+        minute or more after it happens.
       tags:
         - Dispositions
       externalDocs:
@@ -230,15 +235,24 @@ paths:
       parameters:
         - name: updates_after
           in: query
-          required: true
+          required: false
           description: >-
             An exclusive lower bound, as an RFC 3339 timestamp. MaxMind returns
             only updates made after this time. URL-encode the value, for example
-            send a `+` in the UTC offset as `%2B`. Pass the previous response's
-            `last_update_timestamp` to page through results.
+            send a `+` in the UTC offset as `%2B`. Send `updates_after` or
+            `cursor`, not both.
           schema:
             type: string
             format: date-time
+        - name: cursor
+          in: query
+          required: false
+          description: >-
+            The `next_cursor` value from the previous response. MaxMind returns
+            the updates after the position that `next_cursor` marks. Send
+            `updates_after` or `cursor`, not both.
+          schema:
+            type: string
       responses:
         "200":
           description: The transactions with a disposition or note update.
@@ -512,11 +526,17 @@ components:
       description: >-
         The request is not valid. The `code` is one of:
 
-        - `UPDATES_AFTER_REQUIRED`: the request has no `updates_after`
-        parameter, or its value is empty.
+        - `UPDATES_AFTER_REQUIRED`: `updates_after` and `cursor` are both
+        missing or empty.
 
         - `TIMESTAMP_INVALID`: `updates_after` is not a valid RFC 3339
         timestamp.
+
+        - `CURSOR_INVALID`: `cursor` is not valid. Send a `next_cursor` value
+        from a previous response.
+
+        - `CURSOR_AND_UPDATES_AFTER_PROVIDED`: `updates_after` and `cursor` both
+        have a value.
       content:
         application/vnd.maxmind.com-error+json:
           schema:
