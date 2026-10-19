@@ -565,6 +565,7 @@ components:
         phone_verification_time:
           type: string
           format: date-time
+          pattern: ^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$
           description: The most recent date and time a verification of the phone number was attempted, if known, in RFC 3339 date-time format. The time must not be before 1970-01-01T00:00:00Z or more than two days in the future. For a time outside this range, MaxMind ignores the input and returns a warning.
         phone_was_verification_successful:
           type: boolean
@@ -689,6 +690,7 @@ components:
         time:
           type: string
           format: date-time
+          pattern: ^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$
           description: |-
             The time the event occurred, in RFC 3339 format. If you omit this field, MaxMind uses the time it receives the request. MaxMind does not recommend this field for live transactions. It can be useful for stored transactions that you score later.
 

@@ -113,6 +113,7 @@ schemas:
       time:
         type: string
         format: date-time
+        pattern: "^\\d{4}-\\d{2}-\\d{2}T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$"
         description: >-
           The time the event occurred, in RFC 3339 format. If you omit this
           field, MaxMind uses the time it receives the request. MaxMind does not
@@ -270,6 +271,7 @@ schemas:
       phone_verification_time:
         type: string
         format: date-time
+        pattern: "^\\d{4}-\\d{2}-\\d{2}T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$"
         description: >-
           The most recent date and time a verification of the phone number was
           attempted, if known, in RFC 3339 date-time format. The time must not
