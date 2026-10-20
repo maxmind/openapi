@@ -550,6 +550,26 @@ components:
           type: string
           maxLength: 255
           description: The phone number, without the country code. MaxMind strips punctuation characters. After that, the number must contain only digits.
+        phone_verification_method:
+          type: string
+          enum:
+            - network
+            - delivered_code
+            - other
+          description: |-
+            The method used for the most recent verification attempt of the phone number. Do not include this field if no verification was attempted.
+
+            - `network`: carrier or SIM-based silent network authentication. No code is sent to the device.
+            - `delivered_code`: a one-time code delivered to the phone number by SMS, an automated voice call, or an over-the-top messaging channel such as WhatsApp or RCS, and entered by the user.
+            - `other`: a method not listed above, such as flash or missed call verification, or a method you do not know because a third party performed the check.
+        phone_verification_time:
+          type: string
+          format: date-time
+          pattern: ^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$
+          description: The most recent date and time a verification of the phone number was attempted, if known, in RFC 3339 date-time format. The time must not be before 1970-01-01T00:00:00Z or more than two days in the future. For a time outside this range, MaxMind ignores the input and returns a warning.
+        phone_was_verification_successful:
+          type: boolean
+          description: Whether the most recent verification that the end user controls this phone number was successful, using the method named in `phone_verification_method`. `true` if the phone verification was successful, or `false` if the user failed phone verification. Do not include this field if you have not performed this check.
         postal:
           type: string
           maxLength: 255
@@ -670,6 +690,7 @@ components:
         time:
           type: string
           format: date-time
+          pattern: ^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$
           description: |-
             The time the event occurred, in RFC 3339 format. If you omit this field, MaxMind uses the time it receives the request. MaxMind does not recommend this field for live transactions. It can be useful for stored transactions that you score later.
 
@@ -1901,6 +1922,9 @@ components:
           last_name: Doe
           phone_country_code: '1'
           phone_number: 203-000-0000
+          phone_verification_method: delivered_code
+          phone_verification_time: '2026-10-01T14:30:00Z'
+          phone_was_verification_successful: true
           postal: '06511'
           region: CT
         credit_card:
@@ -1956,6 +1980,9 @@ components:
           last_name: Doe
           phone_country_code: '1'
           phone_number: 203-000-0000
+          phone_verification_method: delivered_code
+          phone_verification_time: '2026-10-01T14:30:00Z'
+          phone_was_verification_successful: true
           postal: '06515'
           region: CT
         shopping_cart:
