@@ -1,6 +1,7 @@
 summary: Disposition updates response
 value:
   last_update_timestamp: "2017-03-15T22:06:22.492945Z"
+  next_cursor: "00054acc27a57911deadbeef000000000000000000000050"
   updates:
     - minfraud_id: deadbeef-0000-0000-0000-000000000003
       action: manual_review

@@ -1,4 +1,4 @@
 summary: Dispositions UPDATES_AFTER_REQUIRED response
 value:
   code: UPDATES_AFTER_REQUIRED
-  error: You have not supplied the updates_after URI parameter.
+  error: The updates_after or cursor URL parameter is required.
