@@ -207,6 +207,24 @@ schemas:
           The domain of the email address. Do not include the `@`. You do not
           need to send this field unless you send the email address as an MD5
           hash.
+      verification_time:
+        type: string
+        format: date-time
+        pattern: "^\\d{4}-\\d{2}-\\d{2}T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$"
+        description: >-
+          The most recent date and time a verification of the email address was
+          attempted, if known, in RFC 3339 date-time format. The time must not
+          be before 1970-01-01T00:00:00Z or more than two days in the future.
+          For a time outside this range, MaxMind ignores the input and returns a
+          warning.
+      was_verification_successful:
+        type: boolean
+        description: >-
+          Whether the most recent verification that the end user controls this
+          email address was successful (e.g. by confirming a link sent to the
+          email address). `true` if the email verification was successful, or
+          `false` if the user failed email verification. Do not include this
+          field if you have not performed this check.
   Address:
     type: object
     description: A billing or shipping address.
