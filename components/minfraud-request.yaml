@@ -111,9 +111,7 @@ schemas:
           network. If you are testing the minFraud service, prefix your shop ID
           with `test`, or set it to `test`.
       time:
-        type: string
-        format: date-time
-        pattern: "^\\d{4}-\\d{2}-\\d{2}T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$"
+        $ref: "#/schemas/DateTime"
         description: >-
           The time the event occurred, in RFC 3339 format. If you omit this
           field, MaxMind uses the time it receives the request. MaxMind does not
@@ -208,9 +206,7 @@ schemas:
           need to send this field unless you send the email address as an MD5
           hash.
       verification_time:
-        type: string
-        format: date-time
-        pattern: "^\\d{4}-\\d{2}-\\d{2}T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$"
+        $ref: "#/schemas/DateTime"
         description: >-
           The most recent date and time a verification of the email address was
           attempted, if known, in RFC 3339 date-time format. The time must not
@@ -287,9 +283,7 @@ schemas:
           verification, or a method you do not know because a third party
           performed the check.
       phone_verification_time:
-        type: string
-        format: date-time
-        pattern: "^\\d{4}-\\d{2}-\\d{2}T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$"
+        $ref: "#/schemas/DateTime"
         description: >-
           The most recent date and time a verification of the phone number was
           attempted, if known, in RFC 3339 date-time format. The time must not
@@ -793,3 +787,8 @@ schemas:
         description: >-
           The transaction ID you gave in the original minFraud request. It must
           not contain a NUL character.
+  DateTime:
+    type: string
+    format: date-time
+    pattern: "^\\d{4}-\\d{2}-\\d{2}T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$"
+    description: An RFC 3339 date-time.
