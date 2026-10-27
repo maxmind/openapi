@@ -524,6 +524,11 @@ components:
           type: string
           pattern: ^[0-9a-fA-F]{32}$
           description: An MD5 hash of the account username.
+    DateTime:
+      type: string
+      format: date-time
+      pattern: ^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$
+      description: An RFC 3339 date-time.
     Address:
       type: object
       description: A billing or shipping address.
@@ -574,9 +579,7 @@ components:
             - `delivered_code`: a one-time code delivered to the phone number by SMS, an automated voice call, or an over-the-top messaging channel such as WhatsApp or RCS, and entered by the user.
             - `other`: a method not listed above, such as flash or missed call verification, or a method you do not know because a third party performed the check.
         phone_verification_time:
-          type: string
-          format: date-time
-          pattern: ^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$
+          $ref: '#/components/schemas/DateTime'
           description: The most recent date and time a verification of the phone number was attempted, if known, in RFC 3339 date-time format. The time must not be before 1970-01-01T00:00:00Z or more than two days in the future. For a time outside this range, MaxMind ignores the input and returns a warning.
         phone_was_verification_successful:
           type: boolean
@@ -685,6 +688,12 @@ components:
           type: string
           maxLength: 255
           description: The domain of the email address. Do not include the `@`. You do not need to send this field unless you send the email address as an MD5 hash.
+        verification_time:
+          $ref: '#/components/schemas/DateTime'
+          description: The most recent date and time a verification of the email address was attempted, if known, in RFC 3339 date-time format. The time must not be before 1970-01-01T00:00:00Z or more than two days in the future. For a time outside this range, MaxMind ignores the input and returns a warning.
+        was_verification_successful:
+          type: boolean
+          description: Whether the most recent verification that the end user controls this email address was successful (e.g. by confirming a link sent to the email address). `true` if the email verification was successful, or `false` if the user failed email verification. Do not include this field if you have not performed this check.
     Event:
       type: object
       properties:
@@ -699,9 +708,7 @@ components:
           maxLength: 255
           description: Your internal ID for the shop, affiliate, or merchant the order comes from. Required for a reseller, payment provider, gateway, or affiliate network. If you are testing the minFraud service, prefix your shop ID with `test`, or set it to `test`.
         time:
-          type: string
-          format: date-time
-          pattern: ^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$
+          $ref: '#/components/schemas/DateTime'
           description: |-
             The time the event occurred, in RFC 3339 format. If you omit this field, MaxMind uses the time it receives the request. MaxMind does not recommend this field for live transactions. It can be useful for stored transactions that you score later.
 
@@ -1965,6 +1972,8 @@ components:
         email:
           address: 977577b140bfb7c516e4746204fbdb01
           domain: maxmind.com
+          verification_time: '2026-10-01T14:25:00Z'
+          was_verification_successful: true
         event:
           party: customer
           shop_id: s2123
