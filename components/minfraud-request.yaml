@@ -216,11 +216,14 @@ schemas:
       was_verification_successful:
         type: boolean
         description: >-
-          Whether the most recent verification that the end user controls this
-          email address was successful (e.g. by confirming a link sent to the
-          email address). `true` if the email verification was successful, or
-          `false` if the user failed email verification. Do not include this
-          field if you have not performed this check.
+          Whether the most recent completed verification that the end user
+          controls this email address was successful (e.g. by confirming a link
+          sent to the email address). `true` if the email verification was
+          successful, or `false` if the user failed email verification. A
+          pending, abandoned, or expired verification is not complete and is not
+          a failure. If no verification is complete, for example because the
+          user has not clicked the link yet, do not include this field. Do not
+          include this field if you have not performed this check.
   Address:
     type: object
     description: A billing or shipping address.
@@ -268,8 +271,9 @@ schemas:
           - delivered_code
           - other
         description: >-
-          The method used for the most recent verification attempt of the phone
-          number. Do not include this field if no verification was attempted.
+          The method used for the most recent completed verification of the
+          phone number. Do not include this field if no verification was
+          attempted or no verification is complete.
 
 
           - `network`: carrier or SIM-based silent network authentication. No
@@ -293,10 +297,13 @@ schemas:
       phone_was_verification_successful:
         type: boolean
         description: >-
-          Whether the most recent verification that the end user controls this
-          phone number was successful, using the method named in
+          Whether the most recent completed verification that the end user
+          controls this phone number was successful, using the method named in
           `phone_verification_method`. `true` if the phone verification was
-          successful, or `false` if the user failed phone verification. Do not
+          successful, or `false` if the user failed phone verification. A
+          pending, abandoned, or expired verification is not complete and is not
+          a failure. If no verification is complete, for example because the
+          user has not entered the code yet, do not include this field. Do not
           include this field if you have not performed this check.
       postal:
         type: string
