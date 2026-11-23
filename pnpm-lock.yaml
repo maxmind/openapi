@@ -9,26 +9,26 @@ importers:
   .:
     devDependencies:
       '@redocly/cli':
-        specifier: ^2.77.0
-        version: 2.77.0
+        specifier: ^2.79.0
+        version: 2.79.0
       prettier:
-        specifier: ^3.9.10
-        version: 3.9.10
+        specifier: ^3.10.1
+        version: 3.10.1
 
 packages:
 
-  '@redocly/cli@2.77.0':
-    resolution: {integrity: sha512-XUa4hURDWLPG9WukIXo+UBqa9VpeTndmLI5PHu9QDkwtwH990Jsgz9nl2m1pZjsWrKFPP7avn6etRxxDbuD2Bg==}
+  '@redocly/cli@2.79.0':
+    resolution: {integrity: sha512-MbaH+fA0KqUoGPm82vc/MBhY9D097QK8vSQbZJGzHUcYl3evwnVL9c9hAe5J9C0BenlKTSDPe70YCRGZ/DLHlg==}
     engines: {node: '>=22.12.0 || >=20.19.0 <21.0.0', npm: '>=10'}
     hasBin: true
 
-  prettier@3.9.10:
-    resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
+  prettier@3.10.1:
+    resolution: {integrity: sha512-70vp3ZUYoPlFbF9uiTdXHUUCGEIp7d4+6p+8DYbkm2jP7x/3i/paXVF6dopSI3zd/CEitrZN1rc4i85xWmmXlg==}
     engines: {node: '>=14'}
     hasBin: true
 
 snapshots:
 
-  '@redocly/cli@2.77.0': {}
+  '@redocly/cli@2.79.0': {}
 
-  prettier@3.9.10: {}
+  prettier@3.10.1: {}
